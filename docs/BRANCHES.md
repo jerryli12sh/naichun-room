@@ -13,6 +13,7 @@ Branches communicate only through `src/state/store.ts`.
 | 3 | `feat/avatar` | image-to-3D chibi avatar, animations, state machine | `avatar` |
 | 4 | `feat/photo-wall` | photos pinned, take down, flip for date + note, empty slots | `photo-wall` |
 | 5 | `feat/window-cd-clock` | rain window, CD player (ambient music, no playlist), alarm clock | `window`, `cd-player`, `alarm-clock` |
+| 8 | `feat/turntable` | record console + turntable (replaces the CD player): lid, spin-up, needle drop sets `musicOn` | `cd-player` |
 | 6 | `feat/croc-tomato` | croc plush + sticker collection, tomato egg, drag tomato near croc | `croc` |
 | 7 | `feat/desk-letter` | desk (math modelling), unopened letter, ending | `letter` |
 

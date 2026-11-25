@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useRoom, type AvatarMode } from '../state/store'
-import { AVATAR_HEIGHT as HEIGHT, nightness, SURFACES } from '../content/layout'
+import { AVATAR_HEIGHT as HEIGHT, LISTEN_SPOT, nightness, ROOM, SURFACES } from '../content/layout'
 import { Bubbles, type BubblesHandle } from './Bubbles'
 import { useAvatarModel } from './Avatar'
 
@@ -14,17 +14,18 @@ const look = (x: number, z: number, lx: number, lz: number): Spot => ({ x, z, ya
 
 /** Where he goes. yaw 0 = facing +z (towards the open side of the room). */
 const SPOTS = {
-  center: look(0.15, 0.3, 3, 3), // on the rug
-  front: look(-0.45, 1.15, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
-  photos: look(-0.6, -0.2, -1.25, -1.8), // looking at the photo board above the bed head
-  window: look(0.05, -0.95, 0.7, -1.8), // at the left end of the desk, looking out of the window
-  bedside: look(-0.75, -0.45, -1.6, -0.45),
-  desk: look(0.45, -0.85, 0.45, -1.8), // at the desk, over the books
+  center: look(0.3, 0.3, 3, 3), // on the rug
+  front: look(-0.3, 1.0, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
+  photos: look(-0.45, -0.25, -1.0, -1.5), // looking at the photo board above the bed head
+  window: look(0.05, -0.6, 0.75, -1.5), // at the left end of the desk, looking out of the window
+  bedside: look(-0.5, -0.25, -1.3, -0.25),
+  desk: look(0.5, -0.55, 0.5, -1.5), // at the desk, over the books
+  listen: { x: LISTEN_SPOT.x, z: LISTEN_SPOT.z, yaw: LISTEN_SPOT.yaw }, // in front of the record console
 }
 const WANDER: (keyof typeof SPOTS)[] = ['center', 'front', 'photos', 'center']
 
 /** Lying in bed: feet towards the room, head on the pillow, face up. */
-const BED = { x: SURFACES.bed.x - 0.05, z: -1.72 + HEIGHT, mattress: SURFACES.bed.y - 0.02 }
+const BED = { x: SURFACES.bed.x - 0.05, z: -ROOM.d / 2 + 0.08 + HEIGHT, mattress: SURFACES.bed.y - 0.02 }
 
 const LINES = ['笑着过日子！', '黄总在此', '嘿嘿', '今晚打数模？', '吃了没？']
 const COLORS = { warm: '#d2802a', blue: '#5b6f95', red: '#e0574a' }
@@ -51,6 +52,20 @@ export function RoomAvatar() {
   const pose = useRef<THREE.Group>(null)
   const bob = useRef<THREE.Group>(null)
   const bubbles = useRef<BubblesHandle>(null)
+  const contact = useRef<THREE.Mesh>(null)
+  /** Soft dark blob on the floor under his feet, so he reads as standing on it from any angle. */
+  const contactTex = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 128
+    const g = c.getContext('2d')!
+    const grad = g.createRadialGradient(64, 64, 6, 64, 64, 64)
+    grad.addColorStop(0, 'rgba(40,30,20,0.75)')
+    grad.addColorStop(0.5, 'rgba(40,30,20,0.35)')
+    grad.addColorStop(1, 'rgba(40,30,20,0)')
+    g.fillStyle = grad
+    g.fillRect(0, 0, 128, 128)
+    return new THREE.CanvasTexture(c)
+  }, [])
 
   const lie: Pose = useMemo(() => ({ x: BED.x, z: BED.z, yaw: 0, tilt: -Math.PI / 2 + 0.04, lift: BED.mattress + depth * 0.1 }), [depth]) // lift: sinks into the mattress a little, the backpack sticks out behind him
   const stand = (sp: Spot): Pose => ({ x: sp.x, z: sp.z, yaw: sp.yaw, tilt: 0, lift: 0 })
@@ -134,8 +149,9 @@ export function RoomAvatar() {
           } else if (m === 'watch') settle()
         }
         if (s.musicOn && !prev.musicOn) {
-          if (m === 'sleep') (getUp(), say('!', COLORS.red, 0.6))
+          if (m === 'sleep') (say('!', COLORS.red, 0.6), goTo(SPOTS.listen))
           else if (m === 'doze') (setMode('idle'), say('!', COLORS.red))
+          else if (m !== 'watch') goTo(SPOTS.listen)
         }
       }),
     [],
@@ -204,8 +220,11 @@ export function RoomAvatar() {
     // --- decisions
     if (s.mode === 'idle' && !s.tween) {
       s.wander -= dt
+      const atListen = Math.hypot(SPOTS.listen.x - s.p.x, SPOTS.listen.z - s.p.z) < 0.05
       if (room.isRaining) goTo(SPOTS.window, () => setMode('watch'))
-      else if (!night && performance.now() - s.lastPoke > DOZE_AFTER * 1000 && !room.musicOn) setMode('doze')
+      else if (room.musicOn) {
+        if (!atListen) goTo(SPOTS.listen) // stays by the record player while it plays
+      } else if (!night && performance.now() - s.lastPoke > DOZE_AFTER * 1000 && !room.musicOn) setMode('doze')
       else if (s.wander <= 0) {
         if (night && Math.random() < 0.65) goTo(SPOTS.desk, () => (setMode('desk'), (s.stay = 14 + Math.random() * 12)))
         else {
@@ -216,7 +235,8 @@ export function RoomAvatar() {
     } else if (s.mode === 'desk') {
       s.stay -= dt
       if (room.isRaining) goTo(SPOTS.window, () => setMode('watch'))
-      else if (s.stay <= 0 && !room.musicOn) (setMode('idle'), (s.wander = 0.5))
+      else if (room.musicOn) goTo(SPOTS.listen)
+      else if (s.stay <= 0) (setMode('idle'), (s.wander = 0.5))
     }
 
     // --- body language (all on the inner group, blended so switches take ~0.3 s)
@@ -256,6 +276,12 @@ export function RoomAvatar() {
     g.rotation.z = damp(g.rotation.z, rz, 12, dt)
     g.position.y = damp(g.position.y, y, 20, dt)
 
+    const sh = contact.current!
+    sh.visible = s.p.tilt > -0.6 && s.p.lift < 0.2
+    sh.position.set(s.p.x, 0.021, s.p.z)
+    const k = 1 - Math.min(1, (g.position.y + s.p.lift) * 4)
+    sh.scale.setScalar(0.75 + 0.25 * k)
+    ;(sh.material as THREE.MeshBasicMaterial).opacity = 0.9 * k
     root.current!.position.set(s.p.x, 0, s.p.z)
     root.current!.rotation.y = s.p.yaw
     pose.current!.position.y = s.p.lift
@@ -287,6 +313,10 @@ export function RoomAvatar() {
           </group>
         </group>
       </group>
+      <mesh ref={contact} rotation-x={-Math.PI / 2} renderOrder={1}>
+        <planeGeometry args={[0.62, 0.5]} />
+        <meshBasicMaterial map={contactTex} transparent depthWrite={false} />
+      </mesh>
       <Bubbles ref={bubbles} />
     </group>
   )

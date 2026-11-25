@@ -116,3 +116,51 @@ export function beep() {
     t += i % 2 ? 0.25 : 0.1
   }
 }
+
+/** Soft thump + tick when the stylus touches down (or a click when it lifts). */
+export function needle(down = true) {
+  const a = audio()
+  const t = a.currentTime
+  const o = a.createOscillator()
+  o.type = 'sine'
+  o.frequency.setValueAtTime(down ? 90 : 160, t)
+  o.frequency.exponentialRampToValueAtTime(40, t + 0.12)
+  const g = a.createGain()
+  g.gain.setValueAtTime(down ? 0.25 : 0.08, t)
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.18)
+  o.connect(g).connect(a.destination)
+  o.start(t)
+  o.stop(t + 0.2)
+}
+
+/** Vinyl surface noise: a soft hiss bed with random crackles and the odd pop. Returns a stop function. */
+export function startCrackle() {
+  const a = audio()
+  const len = a.sampleRate * 4
+  const buf = a.createBuffer(1, len, a.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < len; i++) {
+    let v = (Math.random() * 2 - 1) * 0.04 // hiss
+    if (Math.random() < 0.0009) v += (Math.random() * 2 - 1) * 0.9 // crackle
+    if (Math.random() < 0.00004) for (let k = 0; k < 60 && i + k < len; k++) d[i + k] += Math.exp(-k / 9) * 0.8 // pop
+    d[i] += v
+  }
+  const src = a.createBufferSource()
+  src.buffer = buf
+  src.loop = true
+  const bp = a.createBiquadFilter()
+  bp.type = 'bandpass'
+  bp.frequency.value = 2500
+  bp.Q.value = 0.6
+  const g = a.createGain()
+  g.gain.value = 0
+  g.gain.linearRampToValueAtTime(0.22, a.currentTime + 0.3)
+  src.connect(bp).connect(g).connect(a.destination)
+  src.start()
+  return () => {
+    g.gain.cancelScheduledValues(a.currentTime)
+    g.gain.setValueAtTime(g.gain.value, a.currentTime)
+    g.gain.linearRampToValueAtTime(0, a.currentTime + 0.4)
+    setTimeout(() => src.stop(), 500)
+  }
+}
