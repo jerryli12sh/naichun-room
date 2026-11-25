@@ -7,6 +7,11 @@ import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
 import { Avatar } from '../avatar/Avatar'
+import { Windows } from '../objects/Windows'
+import { CdPlayer } from '../objects/CdPlayer'
+import { AlarmClock } from '../objects/AlarmClock'
+import { beep } from '../audio/audio'
+import { useRoom } from '../state/store'
 
 /**
  * PGPR Type C room (3 x 3.6 m, open on +x and +z like a diorama).
@@ -14,6 +19,7 @@ import { Avatar } from '../avatar/Avatar'
  * Each Focusable placeholder below is replaced by its feature branch.
  */
 export function Room() {
+  const set = useRoom((s) => s.set)
   return (
     <group>
       <Shell />
@@ -24,14 +30,12 @@ export function Room() {
       <Focusable id="photo-wall" position={[-1.44, 1.55, 0.95]} distance={1.6}>
         <mesh><boxGeometry args={[0.04, 0.8, 1]} /><meshStandardMaterial color="#cfc6b8" /></mesh>
       </Focusable>
-      <Focusable id="window" position={[WINDOWS.wide.cx, WINDOWS.wide.y0 + WINDOWS.wide.h / 2, -1.79]} distance={2}>
-        <mesh><boxGeometry args={[WINDOWS.wide.w, WINDOWS.wide.h, 0.02]} /><meshStandardMaterial color={palette.night} transparent opacity={0.15} /></mesh>
+      <Windows />
+      <Focusable id="cd-player" position={[SURFACES.cabinet.x - 0.1, SURFACES.cabinet.y, SURFACES.cabinet.z - 0.06]} distance={1} onActivate={() => set({ musicOn: !useRoom.getState().musicOn })}>
+        <CdPlayer />
       </Focusable>
-      <Focusable id="cd-player" position={[SURFACES.cabinet.x - 0.08, SURFACES.cabinet.y + 0.05, SURFACES.cabinet.z]} distance={1}>
-        <RoundedBox args={[0.25, 0.1, 0.25]} radius={0.03}><meshStandardMaterial color="#bbbbbb" /></RoundedBox>
-      </Focusable>
-      <Focusable id="alarm-clock" position={[SURFACES.cabinet.x + 0.12, SURFACES.cabinet.y + 0.07, SURFACES.cabinet.z + 0.08]} distance={0.9}>
-        <mesh><sphereGeometry args={[0.07, 24, 16]} /><meshStandardMaterial color={palette.pgprYellow} /></mesh>
+      <Focusable id="alarm-clock" position={[SURFACES.cabinet.x + 0.13, SURFACES.cabinet.y + 0.1, SURFACES.cabinet.z + 0.12]} distance={0.9} onActivate={() => (beep(), set({ alarmRangAt: Date.now() }))}>
+        <AlarmClock />
       </Focusable>
       <Focusable id="croc" position={[SURFACES.bed.x + 0.15, SURFACES.bed.y + 0.06, -1.35]} distance={1}>
         <RoundedBox args={[0.3, 0.12, 0.14]} radius={0.05}><meshStandardMaterial color={palette.croc} /></RoundedBox>
