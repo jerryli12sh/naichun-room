@@ -29,8 +29,6 @@
   opacity: 0; transition: opacity .8s; font-family: inherit; backdrop-filter: blur(4px);
 }
 .nc-replay.show, .nc-enter.show { opacity: 1; pointer-events: auto; }
-.nc-curtain { position: absolute; inset: 0; background: #f4e3c3; opacity: 0; transition: opacity 1.2s ease; }
-.nc-curtain.on { opacity: 1; }
 
 /* speech bubble, anchored above his head through drei <Html> */
 .nc-bubble {

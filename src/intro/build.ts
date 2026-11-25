@@ -42,8 +42,9 @@ export function buildCorridor() {
     }
   })
   floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping
-  floorTex.repeat.set(6, 4)
-  const floor = mesh(new THREE.PlaneGeometry(14, 8), mat(0xffffff, { map: floorTex, roughness: 0.45 }), 0, 0, 2, group, false)
+  floorTex.repeat.set(6, 3)
+  // corridor floor stops at the wall: behind it is the real room. Sits 4 mm up so it never fights the room's plinth.
+  const floor = mesh(new THREE.PlaneGeometry(14, 6), mat(0xffffff, { map: floorTex, roughness: 0.45 }), 0, 0.004, -WALL_T / 2 + 3, group, false)
   floor.rotation.x = -Math.PI / 2
 
   // the wall, with a hole for the door
@@ -136,7 +137,8 @@ export function buildCorridor() {
   slipper(0.62, 0.42, -0.25); slipper(0.78, 0.55, 0.4)
 
   /* ---------------- the door ---------------- */
-  const pivot = new THREE.Group(); pivot.position.set(-DOOR_W / 2, 0, 0); group.add(pivot)
+  // hinged on the +x side (as seen from the corridor), so it swings open flat along the room's open +x edge
+  const pivot = new THREE.Group(); pivot.position.set(DOOR_W / 2, 0, 0); group.add(pivot)
   const woodTex = canvasTex(512, 1024, (g, w, h) => {
     g.fillStyle = '#dcbb8d'; g.fillRect(0, 0, w, h)
     for (let i = 0; i < 140; i++) {
@@ -149,7 +151,7 @@ export function buildCorridor() {
       g.stroke()
     }
   })
-  mesh(rbox(DOOR_W - 0.01, DOOR_H - 0.02, 0.05, 0.012), mat(0xffffff, { map: woodTex, roughness: 0.55 }), DOOR_W / 2, DOOR_H / 2, 0, pivot)
+  mesh(rbox(DOOR_W - 0.01, DOOR_H - 0.02, 0.05, 0.012), mat(0xffffff, { map: woodTex, roughness: 0.55 }), -DOOR_W / 2, DOOR_H / 2, 0, pivot)
 
   // room plate
   const plateTex = canvasTex(512, 256, (g, w, h) => {
@@ -157,23 +159,23 @@ export function buildCorridor() {
     g.fillStyle = '#3b3128'; g.font = `700 120px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'
     g.fillText(words.plate, w / 2, h / 2 + 8)
   }, true)
-  const plate = new THREE.Group(); plate.position.set(DOOR_W / 2, 1.58, 0.03); pivot.add(plate)
+  const plate = new THREE.Group(); plate.position.set(-DOOR_W / 2, 1.58, 0.03); pivot.add(plate)
   mesh(rbox(0.34, 0.17, 0.016, 0.02), mat(0xf0c75e, { roughness: 0.35, metalness: 0.15 }), 0, 0, 0, plate)
   mesh(new THREE.PlaneGeometry(0.31, 0.155), new THREE.MeshStandardMaterial({ map: plateTex, roughness: 0.4 }), 0, 0, 0.0085, plate, false)
 
   // peephole
-  mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.02, 20).rotateX(Math.PI / 2), mat(0x8c7a64, { metalness: 0.6, roughness: 0.3 }), DOOR_W / 2, 1.36, 0.03, pivot)
+  mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.02, 20).rotateX(Math.PI / 2), mat(0x8c7a64, { metalness: 0.6, roughness: 0.3 }), -DOOR_W / 2, 1.36, 0.03, pivot)
 
   // lever handle (turns before the door opens)
-  const handle = new THREE.Group(); handle.position.set(DOOR_W - 0.12, 1.0, 0.03); pivot.add(handle)
+  const handle = new THREE.Group(); handle.position.set(-(DOOR_W - 0.12), 1.0, 0.03); pivot.add(handle)
   mesh(rbox(0.05, 0.17, 0.018, 0.012), mat(0x55504a, { metalness: 0.5, roughness: 0.35 }), 0, 0, 0, handle)
   const lever = new THREE.Group(); lever.position.set(0, 0.02, 0.03); handle.add(lever)
-  mesh(rbox(0.14, 0.028, 0.028, 0.012), mat(0xe8e1cf, { metalness: 0.3, roughness: 0.3 }), -0.06, 0, 0, lever)
+  mesh(rbox(0.14, 0.028, 0.028, 0.012), mat(0xe8e1cf, { metalness: 0.3, roughness: 0.3 }), 0.06, 0, 0, lever)
 
   // his crocodile avatar as a sticker on the door
   const crocTex = new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}intro/croc-hi.jpg`)
   crocTex.colorSpace = THREE.SRGBColorSpace
-  const sticker = new THREE.Group(); sticker.position.set(DOOR_W / 2 - 0.2, 1.2, 0.028); sticker.rotation.z = 0.12; pivot.add(sticker)
+  const sticker = new THREE.Group(); sticker.position.set(-DOOR_W / 2 + 0.2, 1.2, 0.028); sticker.rotation.z = 0.12; pivot.add(sticker)
   mesh(new THREE.CircleGeometry(0.105, 40), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }), 0, 0, 0, sticker, false)
   mesh(new THREE.CircleGeometry(0.092, 40), new THREE.MeshStandardMaterial({ map: crocTex, roughness: 0.6 }), 0, 0, 0.001, sticker, false)
 
@@ -186,7 +188,7 @@ export function buildCorridor() {
     g.fillStyle = '#8a7357'; g.font = `600 40px ${FONT}`; g.fillText(words.hanger.sub, w / 2, 252)
     g.fillStyle = '#5f7fb8'; g.font = `600 54px ${FONT}`; g.fillText('z z Z', w / 2, 330)
   }, true)
-  const hanger = new THREE.Group(); hanger.position.set(-0.06, 0.02, 0.06); lever.add(hanger)
+  const hanger = new THREE.Group(); hanger.position.set(0.06, 0.02, 0.06); lever.add(hanger)
   mesh(new THREE.TorusGeometry(0.022, 0.004, 8, 24), mat(0xb9a17b), 0, -0.02, 0, hanger)
   const hangCard = mesh(rbox(0.12, 0.18, 0.006, 0.012), mat(0xffffff, { map: hangerTex, roughness: 0.8 }), 0, -0.13, 0, hanger)
 
@@ -202,30 +204,15 @@ export function buildCorridor() {
   const spill = mesh(new THREE.PlaneGeometry(1.4, 0.7), spillMat, 0, 0.004, WALL_T / 2 + 0.35, group, false)
   spill.rotation.x = -Math.PI / 2
 
-  /* ---------------- a glimpse of the room behind the door ---------------- */
-  const room = new THREE.Group(); room.position.z = -WALL_T / 2; group.add(room)
-  mesh(new THREE.BoxGeometry(3.4, 3.0, 3.2), mat(0xf1e6cf, { side: THREE.BackSide, roughness: 0.95 }), 0.4, 1.5, -1.6, room, false)
-  mesh(rbox(1.6, 1.2, 0.04, 0.02), mat(0xe0a64a, { roughness: 0.8 }), 0.9, 1.5, -3.15, room) // PGP yellow panel
-  mesh(rbox(0.9, 0.06, 0.08, 0.02), mat(0xfff2cf, { emissive: 0xffcf7a, emissiveIntensity: 1.6 }), 0.9, 2.0, -3.08, room)
-  mesh(rbox(1.0, 0.32, 2.0, 0.04), mat(0xd9bf96), 1.35, 0.16, -2.1, room)
-  mesh(rbox(0.95, 0.18, 1.95, 0.06), mat(0x5d6f8f, { roughness: 0.9 }), 1.35, 0.41, -2.1, room)
-  mesh(rbox(0.6, 0.12, 0.32, 0.06), mat(0xf6f1e6, { roughness: 0.95 }), 1.35, 0.56, -2.85, room)
-  mesh(rbox(1.0, 0.05, 0.6, 0.015), mat(0xdcc29a), -0.9, 0.75, -2.7, room)
-  mesh(rbox(0.05, 0.75, 0.55, 0.01), mat(0xdcc29a), -1.37, 0.375, -2.7, room)
-
   /* ---------------- lights ---------------- */
-  const hemi = new THREE.HemisphereLight(0x9fb0d8, 0x6a5440, 0.75)
-  const moon = new THREE.DirectionalLight(0x9db6ff, 0.35); moon.position.set(4, 5, 6)
   const spot = new THREE.SpotLight(0xffd59a, 26, 7, 0.9, 0.65, 1.6)
   spot.position.set(0, 2.45, 0.5); spot.target.position.set(0, 0.6, 0.6)
   spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024); spot.shadow.bias = -0.0004
   const fill = new THREE.PointLight(0xffe2b8, 5, 7, 1.6); fill.position.set(-1.6, 1.8, 2.2)
-  const roomLight = new THREE.PointLight(0xffc56a, 2.0, 6, 1.6); roomLight.position.set(0.5, 2.1, -1.4)
-  roomLight.castShadow = true; roomLight.shadow.mapSize.set(512, 512); roomLight.shadow.bias = -0.002
   const winLight = new THREE.PointLight(0x7ea0ff, 1.6, 3.2, 2); winLight.position.set(winX, winY, 0.8)
-  group.add(hemi, moon, spot, spot.target, fill, roomLight, winLight)
+  group.add(spot, spot.target, fill, winLight)
 
-  return { group, pivot, lever, hangCard, gapMat, spillMat, roomLight, lampGlow, hemi, moon, spot, fill, winLight, winNightMat }
+  return { group, pivot, lever, hangCard, gapMat, spillMat, lampGlow, spot, fill, winLight, winNightMat }
 }
 export type Corridor = ReturnType<typeof buildCorridor>
 
