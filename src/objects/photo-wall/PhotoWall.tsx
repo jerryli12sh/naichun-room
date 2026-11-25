@@ -26,25 +26,73 @@ function rand(i: number, k: number) {
   return x - Math.floor(x)
 }
 
-type Layout = { x: number; y: number; rz: number; s: number; pin: string }
+type Layout = { x: number; y: number; z: number; rz: number; s: number; pin: string }
 
-/** Grid on the board: COLS columns, as many rows as needed, cards scaled to fit with a margin. */
+/**
+ * Hand-pinned scatter: start from staggered rows, jitter each card, tilt it (some a lot, most a little),
+ * vary the size a touch, then push apart cards that overlap too much and keep them on the board.
+ * Cards may overlap a little; each gets its own depth so the overlaps stack cleanly.
+ */
 function layout(n: number, bw: number, bh: number): Layout[] {
   const rows = Math.ceil(n / COLS)
-  const gx = (bw - 0.12) / COLS
-  const gy = (bh - 0.14) / rows
-  const s = Math.min((gx * 0.86) / W, (gy * 0.86) / H)
-  return Array.from({ length: n }, (_, i) => {
+  const gx = (bw - 0.1) / COLS
+  const gy = (bh - 0.12) / rows
+  const base = Math.min((gx * 0.95) / W, (gy * 0.95) / H)
+  const cards = Array.from({ length: n }, (_, i) => {
     const c = i % COLS
     const r = Math.floor(i / COLS)
+    const stagger = (r % 2 ? 0.28 : -0.22) * gx
+    // tilt: mostly gentle, every few cards a bolder lean, alternating direction
+    const bold = rand(i, 6) < 0.3
+    const sign = rand(i, 7) < 0.5 ? -1 : 1
+    const rz = sign * (bold ? 0.14 + rand(i, 3) * 0.1 : 0.04 + rand(i, 3) * 0.08)
     return {
-      x: (c - (COLS - 1) / 2) * gx + (rand(i, 1) - 0.5) * 0.012,
-      y: ((rows - 1) / 2 - r) * gy - 0.015 + (rand(i, 2) - 0.5) * 0.012,
-      rz: (rand(i, 3) - 0.5) * 0.09,
-      s,
+      x: (c - (COLS - 1) / 2) * gx + stagger + (rand(i, 1) - 0.5) * gx * 0.45,
+      y: ((rows - 1) / 2 - r) * gy - 0.02 + (rand(i, 2) - 0.5) * gy * 0.38,
+      z: 0,
+      rz,
+      s: base * (0.92 + rand(i, 5) * 0.14),
       pin: PINS[Math.floor(rand(i, 4) * PINS.length)],
     }
   })
+  // relax: keep centres at least ~80% of a card apart, and inside the frame
+  const mx = 0.04
+  const my = 0.05
+  for (let it = 0; it < 40; it++) {
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const a = cards[i]
+        const b = cards[j]
+        const minX = ((a.s + b.s) / 2) * W * 0.82
+        const minY = ((a.s + b.s) / 2) * H * 0.8
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const ox = minX - Math.abs(dx)
+        const oy = minY - Math.abs(dy)
+        if (ox > 0 && oy > 0) {
+          if (ox < oy) {
+            const m = (ox / 2) * Math.sign(dx || 1)
+            a.x -= m
+            b.x += m
+          } else {
+            const m = (oy / 2) * Math.sign(dy || 1)
+            a.y -= m
+            b.y += m
+          }
+        }
+      }
+    }
+    for (const c of cards) {
+      const hw = (W * c.s) / 2
+      const hh = (H * c.s) / 2
+      c.x = Math.max(-bw / 2 + mx + hw, Math.min(bw / 2 - mx - hw, c.x))
+      c.y = Math.max(-bh / 2 + my + hh, Math.min(bh / 2 - my - 0.03 - hh, c.y))
+    }
+  }
+  // stacking order: a fixed shuffle, ~1 mm per layer
+  const order = cards.map((_, i) => i).sort((p, q) => rand(p, 8) - rand(q, 8))
+  order.forEach((ci, k) => (cards[ci].z = k * 0.0012))
+  return cards
 }
 
 /**
@@ -187,7 +235,7 @@ const shadowTex = (() => {
 
 function PinShadow({ slot, hidden }: { slot: Layout; hidden: boolean }) {
   return (
-    <mesh position={[slot.x + 0.006, slot.y - 0.01, BOARD_T + 0.0008]} rotation-z={slot.rz} visible={!hidden}>
+    <mesh position={[slot.x + 0.006, slot.y - 0.01, BOARD_T + slot.z + 0.0004]} rotation-z={slot.rz} visible={!hidden}>
       <planeGeometry args={[W * slot.s * 1.25, H * slot.s * 1.2]} />
       <meshBasicMaterial map={shadowTex} transparent opacity={0.35} depthWrite={false} />
     </mesh>
@@ -236,7 +284,7 @@ function Card({ entry, index, slot, interactive, held, flipped, onClick, onMiss 
     let tx = slot.x
     let ty = slot.y
     const lift = hover && interactive && !held
-    let tz = T / 2 + (lift ? 0.02 : 0)
+    let tz = T / 2 + slot.z + (lift ? 0.03 : 0)
     let ts = slot.s * (lift ? 1.06 : 1)
     _home.setFromEuler(_e.set(lift ? -0.08 : 0, 0, slot.rz))
     let tq = _home
@@ -287,7 +335,7 @@ function Card({ entry, index, slot, interactive, held, flipped, onClick, onMiss 
   return (
     <group
       ref={outer}
-      position={[slot.x, slot.y, T / 2]}
+      position={[slot.x, slot.y, T / 2 + slot.z]}
       rotation-z={slot.rz}
       scale={slot.s}
       onClick={click}
