@@ -282,6 +282,23 @@ export function DoorIntro() {
     st.set({ phase: 'done' })
   }
 
+  /* ---------- skip: drop whatever is playing and let CameraRig fly straight to the room ---------- */
+  const skip = async () => {
+    const st = intro.getState()
+    if (st.phase === 'leaving' || st.phase === 'done') return
+    st.set({ phase: 'leaving', bubble: false })
+    a.tweens.length = 0 // pending awaits just never resolve; the whole scene unmounts below
+    a.camLive = false
+    a.camFree = true
+    ;(camera as THREE.PerspectiveCamera).fov = 35
+    ;(camera as THREE.PerspectiveCamera).updateProjectionMatrix()
+    if (fig.current) fig.current.visible = false
+    setRoom({ entered: true })
+    const mats = collectMaterials(c.group)
+    await tween(0.7, (k) => mats.forEach(([m, o]) => (m.opacity = o * (1 - k))), ease.inOut)
+    st.set({ phase: 'done' })
+  }
+
   // requests from the HTML overlay
   const request = useIntro((s) => s.request)
   useEffect(() => {
@@ -289,6 +306,7 @@ export function DoorIntro() {
     if (request.kind === 'knock') knock()
     if (request.kind === 'replay') replay()
     if (request.kind === 'enter') enter()
+    if (request.kind === 'skip') skip()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [request])
 
@@ -360,7 +378,10 @@ export function DoorIntro() {
 
   // keyboard: space / enter knocks
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => (e.code === 'Space' || e.code === 'Enter') && knock()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Escape') skip()
+      else if (e.code === 'Space' || e.code === 'Enter') knock()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps

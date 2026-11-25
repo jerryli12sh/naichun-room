@@ -14,6 +14,8 @@ export const door = {
   },
   enter: '进 屋 看 看',
   replay: '关上门，换一种开门方式',
+  skip: '直接进屋 »',
+  skipHint: '跳过开场（Esc）',
 } as const
 
 /** What 乃春 says when he opens the door, per mood. */

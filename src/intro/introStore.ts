@@ -14,9 +14,9 @@ type IntroState = {
   hint: string
   bubble: boolean
   /** bumps when the overlay asks the scene to do something */
-  request: { kind: 'knock' | 'replay' | 'enter'; n: number } | null
+  request: { kind: 'knock' | 'replay' | 'enter' | 'skip'; n: number } | null
   set: (p: Partial<Omit<IntroState, 'set' | 'ask'>>) => void
-  ask: (kind: 'knock' | 'replay' | 'enter') => void
+  ask: (kind: 'knock' | 'replay' | 'enter' | 'skip') => void
 }
 
 export const useIntro = create<IntroState>((set, get) => ({
