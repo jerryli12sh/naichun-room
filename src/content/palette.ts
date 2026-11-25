@@ -16,4 +16,7 @@ export const palette = {
   woodDark: '#B8916A',
   white: '#F6F4EF',
   chair: '#B9BFC8',
+  // record console (turntable corner)
+  sage: '#A7B59E',
+  sageDark: '#7E8E77',
 } as const
