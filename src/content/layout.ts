@@ -43,7 +43,7 @@ export const RUG = { x: 0.3, z: 0.3, w: 1.4, d: 1.0 } as const
 export const DOOR = { cx: 0.9, w: 0.92, h: 2.05 } as const
 
 /** Where the avatar stands when you walk in (the door intro walks him here, then hands over). */
-export const AVATAR_SPOT = { x: 0.15, z: 0.3, yaw: Math.atan2(3 - 0.15, 3 - 0.3) } as const // = RoomAvatar SPOTS.center
+export const AVATAR_SPOT = { x: 0.3, z: 0.3, yaw: Math.atan2(3 - 0.3, 3 - 0.3) } as const // RoomAvatar SPOTS.center reads this
 
 /** Day/night: 0 = full day, 1 = full night. Ramps 17–20h and 5–8h. */
 export function nightness(hour: number) {

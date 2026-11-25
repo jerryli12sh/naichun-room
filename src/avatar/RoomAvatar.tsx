@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useRoom, type AvatarMode } from '../state/store'
-import { AVATAR_HEIGHT as HEIGHT, LISTEN_SPOT, nightness, ROOM, SURFACES } from '../content/layout'
+import { AVATAR_HEIGHT as HEIGHT, AVATAR_SPOT, LISTEN_SPOT, nightness, ROOM, SURFACES } from '../content/layout'
 import { Bubbles, type BubblesHandle } from './Bubbles'
 import { useAvatarModel } from './Avatar'
 
@@ -14,7 +14,7 @@ const look = (x: number, z: number, lx: number, lz: number): Spot => ({ x, z, ya
 
 /** Where he goes. yaw 0 = facing +z (towards the open side of the room). */
 const SPOTS = {
-  center: look(0.3, 0.3, 3, 3), // on the rug
+  center: { x: AVATAR_SPOT.x, z: AVATAR_SPOT.z, yaw: AVATAR_SPOT.yaw }, // on the rug; also where the door intro hands him over
   front: look(-0.3, 1.0, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
   photos: look(-0.45, -0.25, -1.0, -1.5), // looking at the photo board above the bed head
   window: look(0.05, -0.6, 0.75, -1.5), // at the left end of the desk, looking out of the window
