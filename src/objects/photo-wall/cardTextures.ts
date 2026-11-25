@@ -6,6 +6,8 @@ import { FONT_HAND as FONT } from '../../content/fonts'
 /** Canvas size for one face. Matches the card's 5:6 polaroid ratio. */
 export const CW = 500
 export const CH = 600
+/** Canvas pixels per layout unit; 2 keeps text and photos sharp when a card is held up close. */
+const RES = 2
 const INK = '#3b3631'
 const PAPER_FRONT = '#fbf8f1'
 const PAPER_BACK = '#f5ecdc'
@@ -47,9 +49,6 @@ function grain(ctx: CanvasRenderingContext2D, seed: number) {
   }
   ctx.restore()
 }
-
-/** Empty slots get a blank date to fill in later; real photos without a date say so. */
-const dateText = (e: PhotoEntry) => e.date ?? (e.file ? '日期待补' : '____ 年 __ 月 __ 日')
 
 const PH = { x: 30, y: 30, s: 440 } // square photo window on the front
 
@@ -101,22 +100,18 @@ function drawBack(ctx: CanvasRenderingContext2D, e: PhotoEntry, i: number) {
   // faint ruled lines
   ctx.strokeStyle = 'rgba(120,150,190,0.22)'
   ctx.lineWidth = 2
-  for (let y = 200; y < 520; y += 58) {
+  for (let y = 180; y < 520; y += 58) {
     ctx.beginPath(); ctx.moveTo(40, y + 14); ctx.lineTo(CW - 40, y + 14); ctx.stroke()
   }
   ctx.textBaseline = 'alphabetic'
   ctx.textAlign = 'left'
-  // date, top-left, like it was written in a hurry
-  ctx.font = `30px ${FONT}`
-  ctx.fillStyle = e.date ? '#6b625a' : '#b0a596'
-  ctx.fillText(dateText(e), 44, 74)
   // place
   ctx.font = `42px ${FONT}`
   ctx.fillStyle = INK
-  ctx.fillText(e.place, 44, 140)
+  ctx.fillText(e.place, 44, 110)
   // note
   ctx.font = `36px ${FONT}`
-  e.note.split('\n').forEach((line, k) => ctx.fillText(line, 50, 200 + k * 58))
+  e.note.split('\n').forEach((line, k) => ctx.fillText(line, 50, 180 + k * 58))
   // sign
   ctx.textAlign = 'right'
   ctx.font = `30px ${FONT}`
@@ -142,8 +137,8 @@ function drawBack(ctx: CanvasRenderingContext2D, e: PhotoEntry, i: number) {
 export function createCardTextures(e: PhotoEntry, i: number) {
   const mk = () => {
     const c = document.createElement('canvas')
-    c.width = CW
-    c.height = CH
+    c.width = CW * RES
+    c.height = CH * RES
     return c
   }
   const fc = mk()
@@ -152,10 +147,12 @@ export function createCardTextures(e: PhotoEntry, i: number) {
   const back = makeTexture(bc)
   const fctx = fc.getContext('2d')!
   const bctx = bc.getContext('2d')!
+  fctx.scale(RES, RES)
+  bctx.scale(RES, RES)
   drawFront(fctx, e, i, null)
   drawBack(bctx, e, i)
 
-  const text = e.place + e.note + dateText(e) + photoSign + '笑'
+  const text = e.place + e.note + photoSign + '笑'
   const img = e.file ? loadImage(`${import.meta.env.BASE_URL}photos/${e.file}`).catch(() => null) : Promise.resolve(null)
   Promise.all([loadFont(text), img]).then(([, im]) => {
     drawFront(fctx, e, i, im)

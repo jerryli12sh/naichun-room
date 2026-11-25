@@ -48,7 +48,7 @@ function layout(n: number): Layout[] {
  *
  * Interaction, only while the wall is focused:
  *   click a photo -> it comes off the wall and floats in front of the camera
- *   click it again -> flips to the back (date + note)
+ *   click it again -> flips to the back (place + note)
  *   click it again, click anywhere else, or leave the wall -> it goes back on the wall
  * Click another photo while one is held and they swap.
  */
