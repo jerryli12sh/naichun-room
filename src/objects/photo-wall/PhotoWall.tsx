@@ -5,19 +5,20 @@ import { photos, type PhotoEntry } from '../../content/photos'
 import { palette } from '../../content/palette'
 import { useRoom } from '../../state/store'
 import { createCardTextures } from './cardTextures'
+import { RoundedBox } from '@react-three/drei'
+import { nightness, PHOTO_WALL } from '../../content/layout'
 
 export const PHOTO_WALL_ID = 'photo-wall'
 
-/** Card size in metres (polaroid, 5:6). */
+/** Card size in metres before fitting to the board (polaroid, 5:6). */
 const W = 0.15
 const H = 0.18
 const T = 0.003
 const COLS = 6
-const GAP_X = 0.175
-const GAP_Y = 0.235
+const BOARD_T = 0.018 // board thickness; cards sit on its front face
 const HOLD_DIST = 0.55 // metres in front of the camera when taken down
 
-const TAPE = [palette.pgprYellow, palette.croc, palette.tomato, '#8fb3d9', '#e7a6b8']
+const PINS = [palette.tomato, palette.croc, '#8fb3d9', '#f2f2f2', palette.pgprYellow]
 
 /** Deterministic jitter so the wall looks hand-pinned but the same on every visit. */
 function rand(i: number, k: number) {
@@ -25,38 +26,44 @@ function rand(i: number, k: number) {
   return x - Math.floor(x)
 }
 
-type Layout = { x: number; y: number; rz: number; tape: string; tapeRz: number }
+type Layout = { x: number; y: number; rz: number; s: number; pin: string }
 
-function layout(n: number): Layout[] {
+/** Grid on the board: COLS columns, as many rows as needed, cards scaled to fit with a margin. */
+function layout(n: number, bw: number, bh: number): Layout[] {
   const rows = Math.ceil(n / COLS)
+  const gx = (bw - 0.12) / COLS
+  const gy = (bh - 0.14) / rows
+  const s = Math.min((gx * 0.86) / W, (gy * 0.86) / H)
   return Array.from({ length: n }, (_, i) => {
     const c = i % COLS
     const r = Math.floor(i / COLS)
     return {
-      x: (c - (COLS - 1) / 2) * GAP_X + (rand(i, 1) - 0.5) * 0.025,
-      y: ((rows - 1) / 2 - r) * GAP_Y + (rand(i, 2) - 0.5) * 0.03,
-      rz: (rand(i, 3) - 0.5) * 0.16,
-      tape: TAPE[Math.floor(rand(i, 4) * TAPE.length)],
-      tapeRz: (rand(i, 5) - 0.5) * 0.5,
+      x: (c - (COLS - 1) / 2) * gx + (rand(i, 1) - 0.5) * 0.012,
+      y: ((rows - 1) / 2 - r) * gy - 0.015 + (rand(i, 2) - 0.5) * 0.012,
+      rz: (rand(i, 3) - 0.5) * 0.09,
+      s,
+      pin: PINS[Math.floor(rand(i, 4) * PINS.length)],
     }
   })
 }
 
 /**
- * Photo wall (branch 4). Lives in "wall space": x right, y up, z out of the wall.
- * Room.tsx mounts it inside a Focusable on the left wall.
+ * Photo wall (branch 4): a framed pinboard with fairy lights and 18 pinned polaroids.
+ * Lives in "wall space": x right, y up, z out of the wall. Board size and which wall come from
+ * PHOTO_WALL in content/layout.ts; Room.tsx mounts it inside a Focusable at that point.
  *
  * Interaction, only while the wall is focused:
- *   click a photo -> it comes off the wall and floats in front of the camera
+ *   click a photo -> it comes off the board and floats in front of the camera
  *   click it again -> flips to the back (place + note)
- *   click it again, click anywhere else, or leave the wall -> it goes back on the wall
+ *   click it again, click anywhere else, or leave the wall -> it goes back on the board
  * Click another photo while one is held and they swap.
  */
 export function PhotoWall() {
   const focused = useRoom((s) => s.focus?.id === PHOTO_WALL_ID)
   const [held, setHeld] = useState<number | null>(null)
   const [flipped, setFlipped] = useState(false)
-  const slots = useMemo(() => layout(photos.length), [])
+  const { w: bw, h: bh, wall } = PHOTO_WALL
+  const slots = useMemo(() => layout(photos.length, bw, bh), [bw, bh])
 
   useEffect(() => {
     if (!focused) setHeld(null)
@@ -83,26 +90,107 @@ export function PhotoWall() {
   }
 
   return (
-    <group rotation-y={Math.PI / 2}>
-      {/* invisible board: clicks on the bare wall go to the Focusable (and put a held photo back) */}
-      <mesh position-z={0.002} visible={false}>
-        <planeGeometry args={[COLS * GAP_X + 0.1, Math.ceil(photos.length / COLS) * GAP_Y + 0.1]} />
-        <meshBasicMaterial />
-      </mesh>
-      {photos.map((p, i) => (
-        <Card
-          key={i}
-          entry={p}
-          index={i}
-          slot={slots[i]}
-          interactive={focused}
-          held={held === i}
-          flipped={held === i && flipped}
-          onClick={() => onCard(i)}
-          onMiss={() => setHeld((h) => (h === i ? null : h))}
-        />
+    <group rotation-y={wall === 'left' ? Math.PI / 2 : 0}>
+      <Board w={bw} h={bh} />
+      <FairyLights w={bw} h={bh} />
+      {slots.map((sl, i) => (
+        <PinShadow key={i} slot={sl} hidden={held === i} />
+      ))}
+      <group position-z={BOARD_T}>
+        {photos.map((p, i) => (
+          <Card
+            key={i}
+            entry={p}
+            index={i}
+            slot={slots[i]}
+            interactive={focused}
+            held={held === i}
+            flipped={held === i && flipped}
+            onClick={() => onCard(i)}
+            onMiss={() => setHeld((h) => (h === i ? null : h))}
+          />
+        ))}
+      </group>
+    </group>
+  )
+}
+
+/** Linen pinboard in a thin wooden frame. Clicks on it go to the Focusable (and put a held photo back). */
+function Board({ w, h }: { w: number; h: number }) {
+  const f = 0.022 // frame width
+  return (
+    <group>
+      <RoundedBox args={[w, h, BOARD_T]} radius={0.006} smoothness={2} position-z={BOARD_T / 2} receiveShadow castShadow>
+        <meshStandardMaterial color="#f3ead8" roughness={0.95} />
+      </RoundedBox>
+      {[
+        [0, h / 2 - f / 2, w, f],
+        [0, -h / 2 + f / 2, w, f],
+        [-w / 2 + f / 2, 0, f, h - 2 * f],
+        [w / 2 - f / 2, 0, f, h - 2 * f],
+      ].map(([x, y, fw, fh], i) => (
+        <RoundedBox key={i} args={[fw, fh, BOARD_T + 0.008]} radius={0.004} smoothness={2} position={[x, y, (BOARD_T + 0.008) / 2]} castShadow>
+          <meshStandardMaterial color={palette.wood} roughness={0.6} />
+        </RoundedBox>
       ))}
     </group>
+  )
+}
+
+/** A sagging string of warm bulbs along the top of the board; brighter at night. */
+function FairyLights({ w, h }: { w: number; h: number }) {
+  const hour = useRoom((s) => s.timeOfDay)
+  const night = nightness(hour)
+  const { tube, bulbs } = useMemo(() => {
+    const pts: THREE.Vector3[] = []
+    const y0 = h / 2 - 0.03
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40
+      const x = (t - 0.5) * (w - 0.04)
+      // two swags between three hooks
+      const sag = Math.sin(t * Math.PI * 2) ** 2 * 0.05
+      pts.push(new THREE.Vector3(x, y0 - sag, BOARD_T + 0.012))
+    }
+    const curve = new THREE.CatmullRomCurve3(pts)
+    const bulbs = Array.from({ length: 13 }, (_, i) => curve.getPointAt((i + 0.5) / 13))
+    return { tube: new THREE.TubeGeometry(curve, 80, 0.0018, 5, false), bulbs }
+  }, [w, h])
+  const glow = 0.6 + night * 2.4
+  return (
+    <group>
+      <mesh geometry={tube}>
+        <meshStandardMaterial color="#5c5348" roughness={0.6} />
+      </mesh>
+      {bulbs.map((p, i) => (
+        <mesh key={i} position={[p.x, p.y - 0.008, p.z]}>
+          <sphereGeometry args={[0.0075, 12, 8]} />
+          <meshStandardMaterial color="#fff4d6" emissive="#ffc46b" emissiveIntensity={glow * (i % 2 ? 1 : 0.8)} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Soft drop shadow under a pinned card, so it reads as paper on a board rather than a floating sticker. */
+const shadowTex = (() => {
+  if (typeof document === 'undefined') return null
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const g = c.getContext('2d')!
+  const grd = g.createRadialGradient(32, 32, 10, 32, 32, 32)
+  grd.addColorStop(0, 'rgba(0,0,0,0.55)')
+  grd.addColorStop(1, 'rgba(0,0,0,0)')
+  g.fillStyle = grd
+  g.fillRect(0, 0, 64, 64)
+  return new THREE.CanvasTexture(c)
+})()
+
+function PinShadow({ slot, hidden }: { slot: Layout; hidden: boolean }) {
+  return (
+    <mesh position={[slot.x + 0.006, slot.y - 0.01, BOARD_T + 0.0008]} rotation-z={slot.rz} visible={!hidden}>
+      <planeGeometry args={[W * slot.s * 1.25, H * slot.s * 1.2]} />
+      <meshBasicMaterial map={shadowTex} transparent opacity={0.35} depthWrite={false} />
+    </mesh>
   )
 }
 
@@ -147,9 +235,10 @@ function Card({ entry, index, slot, interactive, held, flipped, onClick, onMiss 
 
     let tx = slot.x
     let ty = slot.y
-    let tz = 0.006 + (hover && interactive && !held ? 0.03 : 0)
-    let ts = hover && interactive && !held ? 1.06 : 1
-    _home.setFromEuler(_e.set(hover && interactive && !held ? -0.12 : 0, 0, slot.rz))
+    const lift = hover && interactive && !held
+    let tz = T / 2 + (lift ? 0.02 : 0)
+    let ts = slot.s * (lift ? 1.06 : 1)
+    _home.setFromEuler(_e.set(lift ? -0.08 : 0, 0, slot.rz))
     let tq = _home
 
     if (held) {
@@ -198,8 +287,9 @@ function Card({ entry, index, slot, interactive, held, flipped, onClick, onMiss 
   return (
     <group
       ref={outer}
-      position={[slot.x, slot.y, 0.006]}
+      position={[slot.x, slot.y, T / 2]}
       rotation-z={slot.rz}
+      scale={slot.s}
       onClick={click}
       onPointerMissed={held ? onMiss : undefined}
       onPointerOver={(e) => {
@@ -226,12 +316,18 @@ function Card({ entry, index, slot, interactive, held, flipped, onClick, onMiss 
           <boxGeometry args={[W, H, T]} />
           <meshStandardMaterial color="#efe9dd" roughness={0.9} />
         </mesh>
-        {/* washi tape, only while on the wall */}
+        {/* push pin, only while on the board */}
         {!held && (
-          <mesh position={[0, H / 2 - 0.004, T / 2 + 0.0008]} rotation-z={slot.tapeRz}>
-            <planeGeometry args={[0.065, 0.022]} />
-            <meshStandardMaterial color={slot.tape} transparent opacity={0.78} roughness={0.7} />
-          </mesh>
+          <group position={[0, H / 2 - 0.016, T / 2]}>
+            <mesh position-z={0.006} castShadow>
+              <sphereGeometry args={[0.0085, 16, 12]} />
+              <meshStandardMaterial color={slot.pin} roughness={0.35} />
+            </mesh>
+            <mesh position-z={0.002} rotation-x={Math.PI / 2}>
+              <cylinderGeometry args={[0.005, 0.006, 0.004, 16]} />
+              <meshStandardMaterial color={slot.pin} roughness={0.35} />
+            </mesh>
+          </group>
         )}
       </group>
     </group>
