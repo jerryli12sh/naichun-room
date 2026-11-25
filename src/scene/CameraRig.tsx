@@ -6,10 +6,15 @@ import { useRoom } from '../state/store'
 
 const HOME = { pos: [6.6, 5.9, 7.4] as const, target: [0, 0.8, 0] as const }
 const DEFAULT_DIR: [number, number, number] = [0.7, 0.5, 0.7]
-/** Click focus: how far the camera moves from the overview toward the object (0 = stays, 1 = on it). */
-const DOLLY = 0.28
-/** How far the look-at point moves from the room centre to the object. */
-const AIM = 0.75
+/**
+ * Jerry: only the photo wall and the things on the desk zoom the camera when clicked (close enough to read).
+ * Every other object reacts in place and the camera stays where the visitor left it.
+ * Wide shots (distance >= 5, the ending) always move.
+ */
+const ZOOM_IDS = new Set(['photo-wall', 'letter'])
+export const zoomsCamera = (id: string) => ZOOM_IDS.has(id) || id.startsWith('desk-') || id.startsWith('photo-')
+/** Close-ups sit a little further back than each object's requested distance. */
+const CLOSE_UP_PULL_BACK = 1.2
 // Tried in order until the line from the target to the camera is clear: azimuth offsets (deg) x extra lift.
 const SWINGS = [0, 20, -20, 40, -40, 60, -60, 80, -80]
 const LIFTS = [0, 0.35, 0.7]
@@ -60,25 +65,21 @@ export function CameraRig() {
   const clearFocus = useRoom((s) => s.clearFocus)
   const dragging = useRoom((s) => s.dragging)
 
+  const zoomed = useRef(false)
   useEffect(() => {
     const c = ref.current
     if (!c) return
-    if (focus) {
+    if (focus && (zoomsCamera(focus.id) || (focus.distance ?? 0) >= 5)) {
       const obj = new THREE.Vector3(...focus.position)
-      if ((focus.distance ?? 0) >= 5) {
-        // deliberate wide shots (the ending) keep their own framing
-        const cam = clearViewpoint(scene, camera, obj, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), focus.distance!)
-        c.setLookAt(cam.x, cam.y, cam.z, obj.x, obj.y, obj.z, true)
-      } else {
-        // Jerry: clicking must not zoom in much. Stay near the overview: aim mostly at the object and
-        // dolly a little toward it, so the whole room stays largely in frame.
-        const home = new THREE.Vector3(...HOME.pos)
-        const look = new THREE.Vector3(...HOME.target).lerp(obj, AIM)
-        const cam = home.clone().lerp(obj, DOLLY)
-        c.setLookAt(cam.x, cam.y, cam.z, look.x, look.y, look.z, true)
-      }
-    } else {
+      const d = (focus.distance ?? 2) >= 5 ? focus.distance! : (focus.distance ?? 1) * CLOSE_UP_PULL_BACK
+      const cam = clearViewpoint(scene, camera, obj, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), d)
+      c.setLookAt(cam.x, cam.y, cam.z, obj.x, obj.y, obj.z, true)
+      zoomed.current = true
+    } else if (zoomed.current) {
+      // leaving a close-up (Esc, or clicking a non-zoom object) returns to the overview;
+      // otherwise the visitor's own view is left alone
       c.setLookAt(...HOME.pos, ...HOME.target, true)
+      zoomed.current = false
     }
   }, [focus, scene, camera])
 
