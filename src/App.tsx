@@ -19,7 +19,7 @@ export function App() {
         shadows
         dpr={[1, 2]}
         camera={{ position: [7, 6, 7], fov: 35 }}
-        gl={{ preserveDrawingBuffer: import.meta.env.DEV }}
+        gl={{ preserveDrawingBuffer: import.meta.env.DEV, stencil: true }}
         onPointerMissed={(e) => entered && e.detail === 2 && clearFocus()}
       >
         {/* one world: the room is always there; the door intro is built onto its front wall */}
