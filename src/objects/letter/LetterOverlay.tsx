@@ -16,7 +16,8 @@ export function LetterOverlay() {
   const [finished, setFinished] = useState(false)
   const [canLeave, setCanLeave] = useState(false)
 
-  const total = letter.paragraphs.length + 2 // + sign + date
+  const tail = [letter.sign, letter.date].filter(Boolean).length
+  const total = letter.paragraphs.length + tail
 
   // reading: unlock the "done" hint once every paragraph has faded in
   useEffect(() => {
@@ -95,12 +96,12 @@ export function LetterOverlay() {
               {p}
             </p>
           ))}
-          <p className="nc-line nc-sign" style={{ animationDelay: `${0.6 + letter.paragraphs.length * STEP}s` }}>
+          {letter.sign && <p className="nc-line nc-sign" style={{ animationDelay: `${0.6 + letter.paragraphs.length * STEP}s` }}>
             {letter.sign}
-          </p>
-          <p className="nc-line nc-date" style={{ animationDelay: `${0.6 + (letter.paragraphs.length + 1) * STEP}s` }}>
+          </p>}
+          {letter.date && <p className="nc-line nc-date" style={{ animationDelay: `${0.6 + (letter.paragraphs.length + 1) * STEP}s` }}>
             {letter.date}
-          </p>
+          </p>}
         </article>
         <div
           className={`nc-hint${done ? ' nc-show' : ''}`}
