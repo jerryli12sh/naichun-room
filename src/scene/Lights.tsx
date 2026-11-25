@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useRoom } from '../state/store'
-import { nightness, ROOM, WINDOWS } from '../content/layout'
+import { nightness, PANEL, ROOM, SURFACES, WINDOWS } from '../content/layout'
 
 const lerp = THREE.MathUtils.lerp
 const DAY_BG = new THREE.Color('#f5efe6')
@@ -17,6 +17,8 @@ const HEMI_NIGHT = new THREE.Color('#8fa6d8')
  * so flipping the switch fades rather than cuts. Also paints the background and the
  * plain sky behind the window openings (branch 5 draws rain/glass on top of it).
  */
+const COVE_X = (PANEL.x0 + PANEL.x1) / 2 - 0.15
+
 export function Lights() {
   const hour = useRoom((s) => s.timeOfDay)
   const n = useRef(nightness(hour))
@@ -71,16 +73,16 @@ export function Lights() {
       <directionalLight ref={fill} position={[4, 4, 6]} />
       <directionalLight ref={moon} color="#6f8fd6" position={[1, 4, -6]} />
       {/* warm cove light on the yellow panel */}
-      <pointLight ref={cove} color="#ffc37a" position={[-1.25, 2.05, -1.0]} distance={4} decay={1.6} />
-      <spotLight ref={coveUp} color="#ffc37a" position={[-1.34, 2.0, -1.0]} distance={2.5} angle={1.2} penumbra={0.8} decay={1}>
-        <object3D attach="target" position={[-1.45, 2.8, -1.0]} />
+      <pointLight ref={cove} color="#ffc37a" position={[COVE_X, PANEL.lampY + 0.03, -ROOM.d / 2 + 0.45]} distance={4} decay={1.6} />
+      <spotLight ref={coveUp} color="#ffc37a" position={[COVE_X, PANEL.lampY - 0.02, -ROOM.d / 2 + 0.16]} distance={2.5} angle={1.2} penumbra={0.8} decay={1}>
+        <object3D attach="target" position={[COVE_X, PANEL.lampY + 0.8, -ROOM.d / 2 + 0.05]} />
       </spotLight>
-      <mesh position={[-1.34, 2.063, -1.0]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[0.03, 0.95]} />
+      <mesh position={[COVE_X, PANEL.lampY + 0.043, -ROOM.d / 2 + 0.16]} rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[0.95, 0.03]} />
         <meshBasicMaterial ref={glowMat} toneMapped={false} />
       </mesh>
       {/* desk lamp */}
-      <pointLight ref={desk} color="#ffd08a" position={[1.4, 1.05, -1.5]} distance={2.2} decay={1.5} />
+      <pointLight ref={desk} color="#ffd08a" position={[SURFACES.desk.x + 0.6, 1.05, -1.5]} distance={2.2} decay={1.5} />
       {/* plain sky behind the openings */}
       {Object.values(WINDOWS).map((o) => (
         <mesh key={o.cx} position={[o.cx, o.y0 + o.h / 2, backZ]} material={skyMat}>
