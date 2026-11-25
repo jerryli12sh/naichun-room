@@ -4,7 +4,7 @@ import { CameraControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { useRoom } from '../state/store'
 
-const HOME = { pos: [7.2, 6.4, 8.4] as const, target: [0, 0.8, 0] as const }
+const HOME = { pos: [6.6, 5.9, 7.4] as const, target: [0, 0.8, 0] as const }
 const DEFAULT_DIR: [number, number, number] = [0.7, 0.5, 0.7]
 // Tried in order until the line from the target to the camera is clear: azimuth offsets (deg) x extra lift.
 const SWINGS = [0, 20, -20, 40, -40, 60, -60, 80, -80]

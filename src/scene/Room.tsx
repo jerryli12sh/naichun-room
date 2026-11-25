@@ -11,7 +11,7 @@ import { Letter } from '../objects/letter/Letter'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
 import { RoomAvatar } from '../avatar/RoomAvatar'
 import { Windows } from '../objects/Windows'
-import { CdPlayer } from '../objects/CdPlayer'
+import { TurntableCorner } from '../objects/turntable'
 import { AlarmClock } from '../objects/AlarmClock'
 import { beep } from '../audio/audio'
 import { useRoom } from '../state/store'
@@ -35,9 +35,7 @@ export function Room() {
         <PhotoWall />
       </Focusable>
       <Windows />
-      <Focusable id="cd-player" position={[SURFACES.cabinet.x - 0.1, SURFACES.cabinet.y, SURFACES.cabinet.z - 0.06]} distance={1} onActivate={() => set({ musicOn: !useRoom.getState().musicOn })}>
-        <CdPlayer />
-      </Focusable>
+      <TurntableCorner />
       <Focusable id="alarm-clock" position={[SURFACES.cabinet.x + 0.13, SURFACES.cabinet.y + 0.1, SURFACES.cabinet.z + 0.12]} distance={0.9} onActivate={() => (beep(), set({ alarmRangAt: Date.now() }))}>
         <AlarmClock />
       </Focusable>
