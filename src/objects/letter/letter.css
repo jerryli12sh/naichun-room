@@ -1,4 +1,4 @@
-@import 'lxgw-wenkai-webfont/lxgwwenkai-regular.css';
+/* font comes from src/fonts.css (--font-hand) */
 
 .nc-backdrop {
   position: fixed;
@@ -27,7 +27,7 @@
   background-attachment: local;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), 0 2px 0 rgba(255, 255, 255, 0.6) inset;
   color: #3a3226;
-  font-family: 'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif;
+  font-family: var(--font-hand);
   font-size: 18px;
   line-height: 34px;
   background-position: 0 44px;
@@ -86,7 +86,7 @@
   padding: 0 16px 11vh;
   background: radial-gradient(ellipse 60% 55% at 50% 42%, transparent 40%, rgba(10, 14, 26, 0.85) 100%);
   color: #fdf3df;
-  font-family: 'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif;
+  font-family: var(--font-hand);
   text-align: center;
   animation: nc-fade 2.4s ease both;
   z-index: 10;

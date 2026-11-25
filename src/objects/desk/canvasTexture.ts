@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
 
-export const HAND = "'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif"
+export { FONT_HAND as HAND } from '../../content/fonts'
 
 /** A CanvasTexture that is redrawn whenever deps change (and once more after web fonts load). */
 export function useCanvasTexture(w: number, h: number, draw: (c: CanvasRenderingContext2D) => void, deps: unknown[]) {

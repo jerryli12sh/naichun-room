@@ -55,12 +55,7 @@ export function Letter() {
 
   const activate = () => {
     if (phase === 'opening' || phase === 'reading' || phase === 'ending') return
-    set({ letterPhase: 'opening', letterOpened: true })
-    try {
-      localStorage.setItem('naichun.letterOpened', '1')
-    } catch {
-      /* private mode: just forget it */
-    }
+    set({ letterPhase: 'opening', letterOpened: true }) // letterOpened is in PERSISTED
     timer.current = window.setTimeout(() => useRoom.getState().set({ letterPhase: 'reading' }), 1400)
   }
 

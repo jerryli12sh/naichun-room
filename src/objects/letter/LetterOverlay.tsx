@@ -30,7 +30,7 @@ export function LetterOverlay() {
   useEffect(() => {
     if (phase !== 'ending') return
     setCanLeave(false)
-    setFocus({ id: 'ending', position: [0.2, 0.2, 0.2], distance: 10 })
+    setFocus({ id: 'ending', position: [0.2, 0.2, 0.2], distance: 12 })
     const t = window.setTimeout(() => setCanLeave(true), 5200)
     return () => window.clearTimeout(t)
   }, [phase, setFocus])
