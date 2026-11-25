@@ -66,20 +66,12 @@ function Desk() {
           <meshStandardMaterial color={palette.white} roughness={0.45} />
         </RoundedBox>
       ))}
-      {/* books + laptop + desk lamp */}
+      {/* books + desk lamp (laptop, scratch paper and mug belong to feat/desk-letter) */}
       {['#c9524a', '#4b7bb5', '#e2b04a', '#5c9a6b'].map((c, i) => (
         <RoundedBox key={c} args={[0.26, 0.04, 0.18]} radius={0.008} position={[-0.55, 0.795 + i * 0.042, -0.08]} rotation-y={0.15} castShadow>
           <meshStandardMaterial color={c} roughness={0.7} />
         </RoundedBox>
       ))}
-      <group position={[0.35, 0, 0]}>
-        <RoundedBox args={[0.34, 0.018, 0.24]} radius={0.008} position={[0, 0.785, 0.05]} castShadow>
-          <meshStandardMaterial color="#c9ccd2" metalness={0.6} roughness={0.35} />
-        </RoundedBox>
-        <RoundedBox args={[0.34, 0.22, 0.012]} radius={0.008} position={[0, 0.9, -0.08]} rotation-x={-0.25} castShadow>
-          <meshStandardMaterial color="#c9ccd2" metalness={0.6} roughness={0.35} />
-        </RoundedBox>
-      </group>
       <group position={[0.65, 0, -0.12]}>
         <mesh position={[0, 0.785, 0]}>
           <cylinderGeometry args={[0.06, 0.07, 0.02, 20]} />
