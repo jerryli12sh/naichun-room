@@ -93,7 +93,7 @@ export function Letter() {
       c.stroke()
       c.fillStyle = 'rgba(70,55,35,0.75)'
       c.font = `30px ${FONT_HAND}`
-      c.fillText('致 乃春', 330, 300)
+      c.fillText('致 黄总', 330, 300)
     },
     [],
   )
