@@ -9,7 +9,7 @@ import * as sfx from './sfx'
 import { Avatar } from '../avatar/Avatar'
 import { pickMood, useRoom } from '../state/store'
 import { door, doorLines } from '../content/door'
-import { nightness } from '../content/layout'
+import { AVATAR_HEIGHT, nightness } from '../content/layout'
 import './intro.css'
 
 /*
@@ -31,7 +31,7 @@ const CAM_OPEN = new THREE.Vector3(-0.05, 1.25, 3.3)
 const CAM_LOOK = new THREE.Vector3(0.1, 1.08, 0)
 const FIG_POS = new THREE.Vector3(0.08, 0, -0.55)
 const FIG_SCALE = 1.12
-const AVATAR_H = 1.16
+const AVATAR_H = AVATAR_HEIGHT / FIG_SCALE // same real height as in the room
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const lerp = THREE.MathUtils.lerp
 // day / night ends for the corridor (night is the look Jerry signed off on)

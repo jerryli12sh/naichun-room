@@ -6,7 +6,7 @@ import { useRoom } from '../../state/store'
 import { palette } from '../../content/palette'
 import { crocDisgust, tomatoYeetLines } from '../../content/stickers'
 import { tomatoSvg } from './stickerArt'
-import { BACK_Z, WINDOWS } from '../../content/layout'
+import { BACK_Z, WINDOWS, PANEL } from '../../content/layout'
 import { awardSticker, BED_RECT, BED_TOP, crocWorldPos, useCroc } from './crocState'
 
 const BACK_WALL_Z = BACK_Z + 0.005 // just in front of the back wall
@@ -21,11 +21,12 @@ function useSvgTexture(url: string) {
   }, [url])
 }
 
-/** Bits of back wall that are not window: above the bed, the strip between the windows, above the windows. */
+/** Bits of back wall that are not window or photo board: between the yellow panel and the window, above the window, right of it. */
+const W = WINDOWS.wide
 const WALL_SPOTS: (() => [number, number])[] = [
-  () => [-1.3 + Math.random() * 0.75, 1.5 + Math.random() * 0.9],
-  () => [WINDOWS.narrow.cx + WINDOWS.narrow.w / 2 + 0.14, 1.2 + Math.random() * 0.9],
-  () => [-1.2 + Math.random() * 2.4, WINDOWS.wide.y0 + WINDOWS.wide.h + 0.2],
+  () => [PANEL.x1 + 0.12 + Math.random() * (W.cx - W.w / 2 - PANEL.x1 - 0.24), 1.2 + Math.random() * 0.9],
+  () => [W.cx - W.w / 2 + Math.random() * W.w, W.y0 + W.h + 0.2],
+  () => [W.cx + W.w / 2 + 0.15 + Math.random() * 0.2, 1.2 + Math.random() * 0.9],
 ]
 const randomWallSpot = (): [number, number, number] => [...WALL_SPOTS[Math.floor(Math.random() * WALL_SPOTS.length)](), BACK_WALL_Z]
 
@@ -36,7 +37,7 @@ const randomWallSpot = (): [number, number, number] => [...WALL_SPOTS[Math.floor
 export function WallTomato() {
   const tex = useSvgTexture(svgUrl(tomatoSvg(0, 0, 1)))
   const ref = useRef<THREE.Mesh>(null)
-  const [home, setHome] = useState<[number, number, number]>([WINDOWS.narrow.cx + WINDOWS.narrow.w / 2 + 0.14, 1.75, BACK_WALL_Z])
+  const [home, setHome] = useState<[number, number, number]>([(PANEL.x1 + W.cx - W.w / 2) / 2, 1.75, BACK_WALL_Z])
   const [say, setSay] = useState<string | null>(null)
   const flying = useRef<number | null>(null)
 

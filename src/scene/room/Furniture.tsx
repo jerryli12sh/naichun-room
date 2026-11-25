@@ -1,12 +1,15 @@
 import { RoundedBox } from '@react-three/drei'
 import { palette } from '../../content/palette'
-import { ROOM, SURFACES } from '../../content/layout'
+import { useMemo } from 'react'
+import * as THREE from 'three'
+import { ROOM, RUG, SURFACES } from '../../content/layout'
+import { FONT_HAND } from '../../content/fonts'
 
 const BACK = -ROOM.d / 2
 
 /** Single bed along the left wall, head against the back wall. */
 function Bed() {
-  const x = -0.98
+  const x = SURFACES.bed.x
   const len = 2.0
   const z = BACK + len / 2 + 0.04
   return (
@@ -90,10 +93,10 @@ function Desk() {
   )
 }
 
-/** Grey plastic chair tucked at the desk. */
+/** Grey plastic chair, pulled out a little from the desk. */
 function Chair() {
   return (
-    <group position={[0.85, 0, -0.85]}>
+    <group position={[SURFACES.desk.x + 0.05, 0, -0.78]} rotation-y={-0.12}>
       <RoundedBox args={[0.42, 0.04, 0.42]} radius={0.03} position={[0, 0.45, 0]} castShadow>
         <meshStandardMaterial color={palette.chair} roughness={0.45} />
       </RoundedBox>
@@ -110,6 +113,86 @@ function Chair() {
   )
 }
 
+
+/** Woven rug: the open floor in the middle of the room. */
+function Rug() {
+  return (
+    <group position={[RUG.x, 0, RUG.z]}>
+      <RoundedBox args={[RUG.w, 0.016, RUG.d]} radius={0.007} position={[0, 0.01, 0]} receiveShadow>
+        <meshStandardMaterial color="#e7dfcd" roughness={1} />
+      </RoundedBox>
+      {[-1, 1].map((s) => (
+        <mesh key={s} position={[0, 0.019, s * (RUG.d / 2 - 0.08)]} rotation-x={-Math.PI / 2}>
+          <planeGeometry args={[RUG.w - 0.2, 0.025]} />
+          <meshStandardMaterial color="#a9b294" roughness={1} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+/** Slippers waiting at the foot of the bed. */
+function Slippers() {
+  const { x, z } = SURFACES.bed
+  return (
+    <group position={[x + 0.62, 0, z + 1.2]} rotation-y={0.25}>
+      {[-0.08, 0.08].map((dx) => (
+        <group key={dx} position={[dx, 0, 0]}>
+          <RoundedBox args={[0.11, 0.03, 0.26]} radius={0.012} position={[0, 0.016, 0]} castShadow>
+            <meshStandardMaterial color="#d9c9a5" roughness={0.9} />
+          </RoundedBox>
+          <RoundedBox args={[0.11, 0.045, 0.09]} radius={0.02} position={[0, 0.04, -0.06]} castShadow>
+            <meshStandardMaterial color={palette.croc} roughness={0.9} />
+          </RoundedBox>
+        </group>
+      ))}
+    </group>
+  )
+}
+
+/** Small paper poster on the left wall above the bed: 笑着过日子. */
+function Poster() {
+  const tex = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = 256
+    c.height = 320
+    const g = c.getContext('2d')!
+    g.fillStyle = '#f7f1e3'
+    g.fillRect(0, 0, 256, 320)
+    g.fillStyle = '#6d7a58'
+    g.textAlign = 'center'
+    g.font = `56px ${FONT_HAND}`
+    g.fillText('笑着', 128, 105)
+    g.fillText('过日子', 128, 175)
+    g.font = `30px ${FONT_HAND}`
+    g.fillText('10.18', 128, 260)
+    const t = new THREE.CanvasTexture(c)
+    t.colorSpace = THREE.SRGBColorSpace
+    return t
+  }, [])
+  return (
+    <mesh position={[-ROOM.w / 2 + 0.006, 1.55, SURFACES.bed.z + 0.35]} rotation-y={Math.PI / 2} rotation-z={0.03}>
+      <planeGeometry args={[0.4, 0.5]} />
+      <meshStandardMaterial map={tex} roughness={0.9} />
+    </mesh>
+  )
+}
+
+/** Canvas tote bag leaning by the desk. */
+function Tote() {
+  return (
+    <group position={[SURFACES.desk.x + 0.95, 0, -0.95]} rotation-y={-0.5} rotation-z={-0.06}>
+      <RoundedBox args={[0.34, 0.4, 0.12]} radius={0.04} position={[0, 0.2, 0]} castShadow>
+        <meshStandardMaterial color="#e6d8b4" roughness={0.95} />
+      </RoundedBox>
+      <mesh position={[0, 0.42, 0]}>
+        <torusGeometry args={[0.09, 0.008, 6, 16, Math.PI]} />
+        <meshStandardMaterial color="#b6a784" />
+      </mesh>
+    </group>
+  )
+}
+
 export function Furniture() {
   return (
     <group>
@@ -117,6 +200,10 @@ export function Furniture() {
       <Cabinet />
       <Desk />
       <Chair />
+      <Rug />
+      <Slippers />
+      <Poster />
+      <Tote />
     </group>
   )
 }

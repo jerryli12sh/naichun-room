@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { RoundedBox } from '@react-three/drei'
 import { palette } from '../../content/palette'
-import { ROOM, WINDOWS } from '../../content/layout'
+import { PANEL, ROOM, WINDOWS } from '../../content/layout'
 import { makePanelTexture, makePlankTexture } from './textures'
 
 /** Back wall with the two window openings cut out (extruded shape). */
@@ -37,8 +37,9 @@ function BackWall() {
 export function Shell() {
   const plank = useMemo(makePlankTexture, [])
   const grain = useMemo(makePanelTexture, [])
-  const panelZ = -0.68
-  const panelLen = 2.24
+  const panelW = PANEL.x1 - PANEL.x0
+  const panelX = (PANEL.x0 + PANEL.x1) / 2
+  const wallZ = -ROOM.d / 2
   return (
     <group>
       {/* plinth: the "figurine base" */}
@@ -77,15 +78,15 @@ export function Shell() {
         <meshStandardMaterial color={palette.skirting} roughness={0.6} />
       </mesh>
 
-      {/* PGPR yellow wood panel + grey lower band behind the bed */}
-      <RoundedBox args={[0.05, 1.5, panelLen]} radius={0.012} position={[-ROOM.w / 2 + 0.025, 1.55, panelZ]} receiveShadow castShadow>
+      {/* PGPR yellow wood panel on the back wall above the bed head, grey lower band behind the bed */}
+      <RoundedBox args={[panelW, PANEL.y1 - PANEL.y0, 0.05]} radius={0.012} position={[panelX, (PANEL.y0 + PANEL.y1) / 2, wallZ + 0.025]} receiveShadow castShadow>
         <meshStandardMaterial color={palette.pgprYellow} map={grain} roughness={0.5} />
       </RoundedBox>
-      <RoundedBox args={[0.06, 0.62, panelLen]} radius={0.012} position={[-ROOM.w / 2 + 0.03, 0.5, panelZ]} receiveShadow>
+      <RoundedBox args={[panelW, PANEL.y0 - 0.18, 0.06]} radius={0.012} position={[panelX, (PANEL.y0 + 0.18) / 2, wallZ + 0.03]} receiveShadow>
         <meshStandardMaterial color={palette.panelGrey} roughness={0.85} />
       </RoundedBox>
       {/* cove lamp bar on the panel; its light lives in <Lights/> */}
-      <RoundedBox args={[0.12, 0.08, 1.0]} radius={0.025} position={[-ROOM.w / 2 + 0.11, 2.02, -1.0]} castShadow>
+      <RoundedBox args={[1.0, 0.08, 0.12]} radius={0.025} position={[panelX - 0.15, PANEL.lampY, wallZ + 0.11]} castShadow>
         <meshStandardMaterial color="#26262a" roughness={0.4} />
       </RoundedBox>
     </group>

@@ -6,10 +6,10 @@ import { PHOTO_WALL, SURFACES, WINDOWS } from '../content/layout'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
-import { Avatar } from '../avatar/Avatar'
 import { Desk } from '../objects/desk/Desk'
 import { Letter } from '../objects/letter/Letter'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
+import { RoomAvatar } from '../avatar/RoomAvatar'
 import { Windows } from '../objects/Windows'
 import { TurntableCorner } from '../objects/turntable'
 import { AlarmClock } from '../objects/AlarmClock'
@@ -18,7 +18,7 @@ import { useRoom } from '../state/store'
 import { CrocCorner } from '../objects/croc'
 
 /**
- * PGPR Type C room (3 x 3.6 m, open on +x and +z like a diorama).
+ * PGPR Type C room (4.2 x 3.6 m, open on +x and +z like a diorama). Arrangement follows the earlier frank-room version.
  * Shell + Furniture + LightSwitch are the room look (branch 2); positions come from content/layout.ts.
  * Each Focusable placeholder below is replaced by its feature branch.
  */
@@ -31,7 +31,7 @@ export function Room() {
       <LightSwitch />
 
       {/* placeholders: one per feature branch */}
-      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={2.1} dir={[1, 0.1, 0.15]} hoverLift={0} squash={false}>
+      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={2.1} dir={[0.15, 0.1, 1]} hoverLift={0} squash={false}>
         <PhotoWall />
       </Focusable>
       <Windows />
@@ -43,11 +43,10 @@ export function Room() {
       {/* desk-top props + letter + ending (branch 7) */}
       <Desk />
       <Letter />
-      <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
-        <Suspense fallback={null}>
-          <Avatar />
-        </Suspense>
-      </Focusable>
+      {/* the avatar moves around, so it handles its own click and camera focus */}
+      <Suspense fallback={null}>
+        <RoomAvatar />
+      </Suspense>
     </group>
   )
 }
