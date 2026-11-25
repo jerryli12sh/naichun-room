@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/content/palette.ts","./src/scene/CameraRig.tsx","./src/scene/Focusable.tsx","./src/scene/Lights.tsx","./src/scene/Room.tsx","./src/state/store.ts","./vite.config.ts"],"version":"5.9.3"}
