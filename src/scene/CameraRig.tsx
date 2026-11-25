@@ -6,13 +6,10 @@ import { useRoom } from '../state/store'
 
 const HOME = { pos: [6.6, 5.9, 7.4] as const, target: [0, 0.8, 0] as const }
 const DEFAULT_DIR: [number, number, number] = [0.7, 0.5, 0.7]
-/**
- * Jerry: clicking should not zoom in so much. Every object's requested distance is pulled back to keep
- * the room around it in view. Wide shots (the ending, distance >= 5) are left alone.
- */
-const PULL_BACK = 1.9
-const MIN_FOCUS_DISTANCE = 2.2
-export const focusDistance = (d = 2) => (d >= 5 ? d : Math.max(MIN_FOCUS_DISTANCE, d * PULL_BACK))
+/** Click focus: how far the camera moves from the overview toward the object (0 = stays, 1 = on it). */
+const DOLLY = 0.28
+/** How far the look-at point moves from the room centre to the object. */
+const AIM = 0.75
 // Tried in order until the line from the target to the camera is clear: azimuth offsets (deg) x extra lift.
 const SWINGS = [0, 20, -20, 40, -40, 60, -60, 80, -80]
 const LIFTS = [0, 0.35, 0.7]
@@ -67,9 +64,19 @@ export function CameraRig() {
     const c = ref.current
     if (!c) return
     if (focus) {
-      const target = new THREE.Vector3(...focus.position)
-      const cam = clearViewpoint(scene, camera, target, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), focusDistance(focus.distance))
-      c.setLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, true)
+      const obj = new THREE.Vector3(...focus.position)
+      if ((focus.distance ?? 0) >= 5) {
+        // deliberate wide shots (the ending) keep their own framing
+        const cam = clearViewpoint(scene, camera, obj, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), focus.distance!)
+        c.setLookAt(cam.x, cam.y, cam.z, obj.x, obj.y, obj.z, true)
+      } else {
+        // Jerry: clicking must not zoom in much. Stay near the overview: aim mostly at the object and
+        // dolly a little toward it, so the whole room stays largely in frame.
+        const home = new THREE.Vector3(...HOME.pos)
+        const look = new THREE.Vector3(...HOME.target).lerp(obj, AIM)
+        const cam = home.clone().lerp(obj, DOLLY)
+        c.setLookAt(cam.x, cam.y, cam.z, look.x, look.y, look.z, true)
+      }
     } else {
       c.setLookAt(...HOME.pos, ...HOME.target, true)
     }
