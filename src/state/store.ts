@@ -34,6 +34,8 @@ export type RoomState = {
   letterPhase: LetterPhase // not persisted; other branches may react, e.g. the avatar waves during 'ending'
   dragging: boolean // something is being dragged; camera orbit pauses
   alarmRangAt: number // Date.now() of the last alarm ring, 0 = never (branch 3: avatar goes to bed / wakes up)
+  lastMood: DoorMood | null // door mood of the previous visit, so the next one differs
+  visits: number // how many times the site has been opened (door intro says 又来啦 after the first)
   focus: FocusTarget | null
   setFocus: (f: FocusTarget) => void
   clearFocus: () => void
@@ -41,18 +43,29 @@ export type RoomState = {
 }
 
 /** Fields kept across visits. Everything else starts fresh. */
-export const PERSISTED: (keyof RoomState)[] = ['stickersFound', 'tomatoYeets', 'letterOpened']
+export const PERSISTED: (keyof RoomState)[] = ['stickersFound', 'tomatoYeets', 'letterOpened', 'lastMood', 'visits']
 
-const moods: DoorMood[] = ['sleeping', 'headphones', 'croc', 'eating']
+export const moods: DoorMood[] = ['sleeping', 'headphones', 'croc', 'eating']
+
+const params = new URLSearchParams(typeof location === 'undefined' ? '' : location.search)
+
+/** Random door mood, never `last`. `?mood=croc` forces one (for debugging). */
+export function pickMood(last: DoorMood | null = null): DoorMood {
+  const forced = params.get('mood') as DoorMood | null
+  if (forced && moods.includes(forced)) return forced
+  const pool = moods.filter((m) => m !== last)
+  return pool[Math.floor(Math.random() * pool.length)]
+}
 
 export const useRoom = create<RoomState>()(
   persist(
     (set) => ({
-      entered: true, // TODO(branch 1): start false once the door intro exists
-      doorMood: moods[Math.floor(Math.random() * moods.length)],
+      // `?room` skips the door (handy while working on other branches)
+      entered: params.has('room'),
+      doorMood: pickMood(),
       isRaining: false,
       musicOn: false,
-      timeOfDay: new Date().getHours(),
+      timeOfDay: params.has('hour') ? Number(params.get('hour')) : new Date().getHours(), // ?hour=22 to preview
       stickersFound: [],
       stickerPop: null,
       tomatoYeets: 0,
@@ -61,6 +74,8 @@ export const useRoom = create<RoomState>()(
       letterPhase: 'sealed',
       dragging: false,
       alarmRangAt: 0,
+      lastMood: null,
+      visits: 0,
       focus: null,
       setFocus: (focus) => set({ focus }),
       clearFocus: () => set({ focus: null }),
@@ -69,6 +84,12 @@ export const useRoom = create<RoomState>()(
     {
       name: 'naichun-room',
       partialize: (s) => Object.fromEntries(PERSISTED.map((k) => [k, s[k]])) as Partial<RoomState>,
+      // once the saved state is back: count this visit and pick a mood unlike last time's
+      onRehydrateStorage: () => (s) => {
+        if (!s) return
+        const doorMood = pickMood(s.lastMood)
+        s.set({ doorMood, lastMood: doorMood, visits: s.visits + 1 })
+      },
     },
   ),
 )
