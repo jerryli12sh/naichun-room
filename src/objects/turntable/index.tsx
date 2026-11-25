@@ -1,6 +1,7 @@
 import { Focusable } from '../../scene/Focusable'
 import { RECORD_CONSOLE } from '../../content/layout'
 import { RecordConsole, Turntable, deck } from './Turntable'
+import { primeSong } from '../../audio/audio'
 
 const { x, z, len, depth, h } = RECORD_CONSOLE
 
@@ -14,7 +15,7 @@ export function TurntableCorner() {
       <group position={[x, 0, z]} rotation-y={Math.PI / 2}>
         <RecordConsole len={len} depth={depth} h={h} />
       </group>
-      <Focusable id="turntable" position={[x, h, z]} distance={1.15} dir={[1, 0.8, 0.45]} hoverLift={0} squash={false} onActivate={() => (deck.want = !deck.want)}>
+      <Focusable id="turntable" position={[x, h, z]} distance={1.15} dir={[1, 0.8, 0.45]} hoverLift={0} squash={false} onActivate={() => (primeSong(), (deck.want = !deck.want))}>
         <group rotation-y={Math.PI / 2}>
           <Turntable />
         </group>
