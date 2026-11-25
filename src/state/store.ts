@@ -30,6 +30,7 @@ export type RoomState = {
   letterOpened: boolean
   letterPhase: LetterPhase // not persisted; other branches may react, e.g. the avatar waves during 'ending'
   dragging: boolean // something is being dragged; camera orbit pauses
+  alarmRangAt: number // Date.now() of the last alarm ring, 0 = never (branch 3: avatar goes to bed / wakes up)
   focus: FocusTarget | null
   setFocus: (f: FocusTarget) => void
   clearFocus: () => void
@@ -53,6 +54,7 @@ export const useRoom = create<RoomState>()(
       letterOpened: false,
       letterPhase: 'sealed',
       dragging: false,
+      alarmRangAt: 0,
       focus: null,
       setFocus: (focus) => set({ focus }),
       clearFocus: () => set({ focus: null }),

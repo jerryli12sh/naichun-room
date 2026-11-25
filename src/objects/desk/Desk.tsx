@@ -6,8 +6,10 @@ import { Focusable } from '../../scene/Focusable'
 import { palette } from '../../content/palette'
 import { laptopScreens, scratch } from '../../content/letter'
 import { HAND, useCanvasTexture } from './canvasTexture'
+import { SURFACES } from '../../content/layout'
 
-const TOP = 0.78 // desk surface height (desk slab lives in Room.tsx, branch 2 owns its look)
+// Desk slab, books and lamp are room-look's (scene/room/Furniture.tsx); this branch owns the rest of the desk top.
+const { x: DX, y: TOP, z: DZ } = SURFACES.desk
 
 /** Everything that sits on the desk except the letter: laptop (数模 at 3 am), scratch paper, mug, pen. */
 export function Desk() {
@@ -15,9 +17,9 @@ export function Desk() {
     <group>
       <Laptop />
       <Scratch />
-      <Mug position={[1.27, TOP, -1.62]} />
+      <Mug position={[DX + 0.5, TOP, DZ + 0.08]} />
       {/* pen lying across the scratch paper */}
-      <mesh position={[0.08, TOP + 0.012, -1.28]} rotation={[0, 0.9, Math.PI / 2]} castShadow>
+      <mesh position={[DX - 0.36, TOP + 0.012, DZ + 0.2]} rotation={[0, 0.9, Math.PI / 2]} castShadow>
         <cylinderGeometry args={[0.006, 0.006, 0.14, 10]} />
         <meshStandardMaterial color="#2f3d63" roughness={0.5} />
       </mesh>
@@ -89,7 +91,7 @@ function Laptop() {
   return (
     <Focusable
       id="desk-laptop"
-      position={[0.32, TOP, -1.52]}
+      position={[DX - 0.08, TOP, DZ - 0.08]}
       distance={0.9}
       onActivate={() => setI((k) => (k + 1) % laptopScreens.length)}
     >
@@ -187,7 +189,7 @@ function Scratch() {
   })
 
   return (
-    <Focusable id="desk-scratch" position={[-0.02, TOP, -1.36]} distance={0.7} onActivate={() => setFanned((f) => !f)}>
+    <Focusable id="desk-scratch" position={[DX - 0.42, TOP, DZ + 0.16]} distance={0.7} onActivate={() => setFanned((f) => !f)}>
       <group ref={g}>
         {[0, 1, 2].map((k) => (
           <mesh key={k} rotation-x={-Math.PI / 2} position-y={0.001 + k * 0.0015} receiveShadow>

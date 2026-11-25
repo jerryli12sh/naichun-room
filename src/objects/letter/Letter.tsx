@@ -4,8 +4,9 @@ import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
 import { Focusable } from '../../scene/Focusable'
 import { useRoom } from '../../state/store'
+import { SURFACES } from '../../content/layout'
 
-const POS: [number, number, number] = [0.95, 0.78, -1.3]
+const POS: [number, number, number] = [SURFACES.desk.x + 0.24, SURFACES.desk.y, SURFACES.desk.z + 0.17]
 const W = 0.2
 const D = 0.13
 
