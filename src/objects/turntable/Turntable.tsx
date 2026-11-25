@@ -507,7 +507,7 @@ export function RecordConsole({ len, depth, h }: { len: number; depth: number; h
       </RoundedBox>
 
       {/* picture ledge on the wall, two sleeves on show */}
-      <group position-z={back - 0.02}>
+      <group position={[0.07, 0, back - 0.02]}>
         <mesh position={[0, 1.0, 0.035]} castShadow receiveShadow>
           <boxGeometry args={[0.72, 0.018, 0.07]} />
           <meshStandardMaterial color="#D9B98C" roughness={0.5} metalness={0} />
