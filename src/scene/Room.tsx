@@ -13,6 +13,7 @@ import { CdPlayer } from '../objects/CdPlayer'
 import { AlarmClock } from '../objects/AlarmClock'
 import { beep } from '../audio/audio'
 import { useRoom } from '../state/store'
+import { CrocCorner } from '../objects/croc'
 
 /**
  * PGPR Type C room (3 x 3.6 m, open on +x and +z like a diorama).
@@ -38,9 +39,7 @@ export function Room() {
       <Focusable id="alarm-clock" position={[SURFACES.cabinet.x + 0.13, SURFACES.cabinet.y + 0.1, SURFACES.cabinet.z + 0.12]} distance={0.9} onActivate={() => (beep(), set({ alarmRangAt: Date.now() }))}>
         <AlarmClock />
       </Focusable>
-      <Focusable id="croc" position={[SURFACES.bed.x + 0.15, SURFACES.bed.y + 0.06, -1.35]} distance={1}>
-        <RoundedBox args={[0.3, 0.12, 0.14]} radius={0.05}><meshStandardMaterial color={palette.croc} /></RoundedBox>
-      </Focusable>
+      <CrocCorner />
       <Focusable id="letter" position={[SURFACES.desk.x - 0.1, SURFACES.desk.y + 0.005, SURFACES.desk.z + 0.12]} distance={0.8}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
       </Focusable>
