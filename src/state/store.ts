@@ -27,6 +27,9 @@ export type RoomState = {
   musicOn: boolean
   timeOfDay: number // 0..24
   stickersFound: string[] // crocodile sticker ids collected
+  stickerPop: { id: string; isNew: boolean; key: number } | null // sticker card currently flying out (branch 6)
+  tomatoYeets: number // times the wall tomato was flicked out of the room (branch 6)
+  albumOpen: boolean // crocodile sticker album overlay (branch 6)
   letterOpened: boolean
   letterPhase: LetterPhase // not persisted; other branches may react, e.g. the avatar waves during 'ending'
   dragging: boolean // something is being dragged; camera orbit pauses
@@ -38,7 +41,7 @@ export type RoomState = {
 }
 
 /** Fields kept across visits. Everything else starts fresh. */
-export const PERSISTED: (keyof RoomState)[] = ['stickersFound', 'letterOpened']
+export const PERSISTED: (keyof RoomState)[] = ['stickersFound', 'tomatoYeets', 'letterOpened']
 
 const moods: DoorMood[] = ['sleeping', 'headphones', 'croc', 'eating']
 
@@ -51,6 +54,9 @@ export const useRoom = create<RoomState>()(
       musicOn: false,
       timeOfDay: new Date().getHours(),
       stickersFound: [],
+      stickerPop: null,
+      tomatoYeets: 0,
+      albumOpen: false,
       letterOpened: false,
       letterPhase: 'sealed',
       dragging: false,
