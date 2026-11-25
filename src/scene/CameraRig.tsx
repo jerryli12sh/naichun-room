@@ -9,6 +9,7 @@ export function CameraRig() {
   const ref = useRef<CameraControls>(null)
   const focus = useRoom((s) => s.focus)
   const clearFocus = useRoom((s) => s.clearFocus)
+  const dragging = useRoom((s) => s.dragging)
 
   useEffect(() => {
     const c = ref.current
@@ -31,6 +32,7 @@ export function CameraRig() {
   return (
     <CameraControls
       ref={ref}
+      enabled={!dragging}
       smoothTime={0.4}
       minDistance={1.2}
       maxDistance={14}
