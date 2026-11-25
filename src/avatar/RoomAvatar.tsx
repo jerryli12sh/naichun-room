@@ -98,12 +98,14 @@ export function RoomAvatar() {
     a.current.wander = 4 + Math.random() * 5
   }
 
-  // first frame: asleep if the door said so (branch 1 picks doorMood), else standing mid-room
+  // first frame: standing mid-room, where the door intro left him. If he opened the door half
+  // asleep he shuffles back to bed a moment later.
   useEffect(() => {
-    if (useRoom.getState().doorMood === 'sleeping') {
-      a.current.p = { ...lie }
-      setMode('sleep')
-    } else setMode('idle')
+    setMode('idle')
+    if (useRoom.getState().doorMood !== 'sleeping') return
+    const t = setTimeout(() => (say('困…', COLORS.blue), goTo(SPOTS.bedside, lieDown)), 2500)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lie])
 
   // the visitor counts as "around" while they click

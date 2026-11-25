@@ -5,12 +5,14 @@ import { Lights } from './scene/Lights'
 import { DoorIntro } from './intro/DoorIntro'
 import { IntroOverlay } from './intro/IntroOverlay'
 import { useRoom } from './state/store'
+import { useIntro } from './intro/introStore'
 import { LetterOverlay } from './objects/letter/LetterOverlay'
 import { StickerOverlay } from './objects/croc'
 
 export function App() {
   const clearFocus = useRoom((s) => s.clearFocus)
   const entered = useRoom((s) => s.entered)
+  const introDone = useIntro((s) => s.phase === 'done')
   return (
     <>
       <Canvas
@@ -20,15 +22,11 @@ export function App() {
         gl={{ preserveDrawingBuffer: import.meta.env.DEV }}
         onPointerMissed={(e) => entered && e.detail === 2 && clearFocus()}
       >
-        {entered ? (
-          <>
-            <Lights />
-            <Room />
-            <CameraRig />
-          </>
-        ) : (
-          <DoorIntro />
-        )}
+        {/* one world: the room is always there; the door intro is built onto its front wall */}
+        <Lights />
+        <Room />
+        {!introDone && <DoorIntro />}
+        {entered && <CameraRig />}
       </Canvas>
       <IntroOverlay />
       {entered && <StickerOverlay />}

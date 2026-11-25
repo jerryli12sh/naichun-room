@@ -24,6 +24,7 @@ import { CrocCorner } from '../objects/croc'
  */
 export function Room() {
   const set = useRoom((s) => s.set)
+  const entered = useRoom((s) => s.entered)
   return (
     <group>
       <Shell />
@@ -46,9 +47,12 @@ export function Room() {
       <Desk />
       <Letter />
       {/* the avatar moves around, so it handles its own click and camera focus */}
-      <Suspense fallback={null}>
-        <RoomAvatar />
-      </Suspense>
+      {/* hidden while you're still at the door: the door intro shows him there and hands over on entering */}
+      {entered && (
+        <Suspense fallback={null}>
+          <RoomAvatar />
+        </Suspense>
+      )}
     </group>
   )
 }
