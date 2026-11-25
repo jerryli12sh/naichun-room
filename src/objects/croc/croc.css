@@ -1,7 +1,7 @@
 .croc-bubble,
 .sticker-pop,
 .album {
-  font-family: 'ZCOOL KuaiLe', 'PingFang SC', sans-serif;
+  font-family: var(--font-hand);
   color: #3d3a33;
   user-select: none;
 }

@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import { useRoom } from '../../state/store'
 import { stickers, type Sticker } from '../../content/stickers'
 import { crocSvg } from './stickerArt'
-import '@fontsource/zcool-kuaile/chinese-simplified-400.css'
-import '@fontsource/zcool-kuaile/latin-400.css'
 import './croc.css'
 
 const svgCache = new Map<string, string>()

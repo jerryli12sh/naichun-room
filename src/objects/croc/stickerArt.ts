@@ -1,3 +1,5 @@
+import { FONT_HAND } from '../../content/fonts'
+
 /**
  * Placeholder crocodile sticker art, drawn as SVG in a crayon-ish hand-drawn style.
  * Each sticker in content/stickers.ts either points at a real image or describes one of these.
@@ -130,7 +132,7 @@ export function crocSvg(o: CrocArt = {}): string {
    ${eye(100, 72, eyes)}${eye(146, 66, eyes)}
    ${pick('front')}
   </g>
-  ${o.text ? `<text x="100" y="30" text-anchor="middle" font-family="'ZCOOL KuaiLe', sans-serif" font-size="${o.fontSize ?? 24}" fill="${o.textColor ?? INK}">${o.text}</text>` : ''}
+  ${o.text ? `<text x="100" y="30" text-anchor="middle" font-family="${FONT_HAND}" font-size="${o.fontSize ?? 24}" fill="${o.textColor ?? INK}">${o.text}</text>` : ''}
   ${pick('over')}
   </svg>`
 }
