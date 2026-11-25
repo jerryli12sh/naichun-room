@@ -6,6 +6,13 @@ import { useRoom } from '../state/store'
 
 const HOME = { pos: [6.6, 5.9, 7.4] as const, target: [0, 0.8, 0] as const }
 const DEFAULT_DIR: [number, number, number] = [0.7, 0.5, 0.7]
+/**
+ * Jerry: clicking should not zoom in so much. Every object's requested distance is pulled back to keep
+ * the room around it in view. Wide shots (the ending, distance >= 5) are left alone.
+ */
+const PULL_BACK = 1.9
+const MIN_FOCUS_DISTANCE = 2.2
+export const focusDistance = (d = 2) => (d >= 5 ? d : Math.max(MIN_FOCUS_DISTANCE, d * PULL_BACK))
 // Tried in order until the line from the target to the camera is clear: azimuth offsets (deg) x extra lift.
 const SWINGS = [0, 20, -20, 40, -40, 60, -60, 80, -80]
 const LIFTS = [0, 0.35, 0.7]
@@ -61,7 +68,7 @@ export function CameraRig() {
     if (!c) return
     if (focus) {
       const target = new THREE.Vector3(...focus.position)
-      const cam = clearViewpoint(scene, camera, target, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), focus.distance ?? 2)
+      const cam = clearViewpoint(scene, camera, target, new THREE.Vector3(...(focus.dir ?? DEFAULT_DIR)), focusDistance(focus.distance))
       c.setLookAt(cam.x, cam.y, cam.z, target.x, target.y, target.z, true)
     } else {
       c.setLookAt(...HOME.pos, ...HOME.target, true)
