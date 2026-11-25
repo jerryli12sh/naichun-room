@@ -1,4 +1,4 @@
 /* One handwriting face for every bit of in-world text (spec: 霞鹜文楷). Use var(--font-hand) in CSS,
    or FONT_HAND from src/content/fonts.ts for canvas textures. */
-@import 'lxgw-wenkai-webfont/style.css';
+@import 'lxgw-wenkai-webfont/lxgwwenkai-regular.css'; /* regular only: the full set is ~30 MB */
 :root { --font-hand: 'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif; }
