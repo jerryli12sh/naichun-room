@@ -96,7 +96,7 @@ function Desk() {
 /** Grey plastic chair, pulled out a little from the desk. */
 function Chair() {
   return (
-    <group position={[SURFACES.desk.x + 0.05, 0, -0.78]} rotation-y={-0.12}>
+    <group position={[SURFACES.desk.x + 0.05, 0, SURFACES.desk.z + 0.64]} rotation-y={-0.12}>
       <RoundedBox args={[0.42, 0.04, 0.42]} radius={0.03} position={[0, 0.45, 0]} castShadow>
         <meshStandardMaterial color={palette.chair} roughness={0.45} />
       </RoundedBox>
@@ -181,7 +181,7 @@ function Poster() {
 /** Canvas tote bag leaning by the desk. */
 function Tote() {
   return (
-    <group position={[SURFACES.desk.x + 0.95, 0, -0.95]} rotation-y={-0.5} rotation-z={-0.06}>
+    <group position={[SURFACES.desk.x + 0.62, 0, SURFACES.desk.z + 0.58]} rotation-y={-0.5} rotation-z={-0.06}>
       <RoundedBox args={[0.34, 0.4, 0.12]} radius={0.04} position={[0, 0.2, 0]} castShadow>
         <meshStandardMaterial color="#e6d8b4" roughness={0.95} />
       </RoundedBox>

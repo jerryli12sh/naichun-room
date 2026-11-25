@@ -11,7 +11,7 @@ export function LightSwitch() {
   const isNight = nightness(hour) > 0.5
   return (
     <group
-      position={[-ROOM.w / 2 + 0.012, 1.15, 1.55]}
+      position={[-ROOM.w / 2 + 0.012, 1.15, ROOM.d / 2 - 0.1]}
       onClick={(e) => (e.stopPropagation(), set({ timeOfDay: isNight ? 14 : 22 }))}
       onPointerOver={(e) => (e.stopPropagation(), setHover(true), (document.body.style.cursor = 'pointer'))}
       onPointerOut={() => (setHover(false), (document.body.style.cursor = 'auto'))}
