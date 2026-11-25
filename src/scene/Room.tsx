@@ -3,6 +3,7 @@ import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
 import { Avatar } from '../avatar/Avatar'
+import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
 
 /**
  * Grey-box PGPR Type C room (about 3 x 3.6 m, open on +x and +z like a diorama).
@@ -49,8 +50,8 @@ export function Room() {
       </RoundedBox>
 
       {/* placeholders: one per feature branch */}
-      <Focusable id="photo-wall" position={[-1.4, 1.6, 0.8]} distance={1.6}>
-        <mesh><boxGeometry args={[0.04, 0.8, 1]} /><meshStandardMaterial color="#cfc6b8" /></mesh>
+      <Focusable id={PHOTO_WALL_ID} position={[-1.46, 1.6, 1.05]} distance={1.75} dir={[1, 0.12, 0.28]} hoverLift={0} squash={false}>
+        <PhotoWall />
       </Focusable>
       <Focusable id="window" position={[0.6, 1.7, -1.75]} distance={2}>
         <mesh><boxGeometry args={[1, 1, 0.04]} /><meshStandardMaterial color={palette.night} /></mesh>

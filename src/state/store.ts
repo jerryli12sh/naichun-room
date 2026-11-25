@@ -5,7 +5,13 @@ import { create } from 'zustand'
  * Add fields here instead of importing another branch's components.
  */
 export type DoorMood = 'sleeping' | 'headphones' | 'croc' | 'eating'
-export type FocusTarget = { id: string; position: [number, number, number]; distance?: number }
+export type FocusTarget = {
+  id: string
+  position: [number, number, number]
+  distance?: number
+  /** Direction from the target to the camera (any length). Default is the diagonal [0.7, 0.5, 0.7]. */
+  dir?: [number, number, number]
+}
 
 type RoomState = {
   entered: boolean // false = still at the door (branch 1 sets it true)
@@ -36,3 +42,5 @@ export const useRoom = create<RoomState>((set) => ({
   clearFocus: () => set({ focus: null }),
   set: (patch) => set(patch),
 }))
+
+if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__room = useRoom

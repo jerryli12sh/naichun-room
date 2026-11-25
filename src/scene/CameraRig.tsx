@@ -16,7 +16,9 @@ export function CameraRig() {
     if (focus) {
       const [x, y, z] = focus.position
       const d = focus.distance ?? 2
-      c.setLookAt(x + d * 0.7, y + d * 0.5, z + d * 0.7, x, y, z, true)
+      const [dx, dy, dz] = focus.dir ?? [0.7, 0.5, 0.7]
+      const n = focus.dir ? Math.hypot(dx, dy, dz) : 1
+      c.setLookAt(x + (d * dx) / n, y + (d * dy) / n, z + (d * dz) / n, x, y, z, true)
     } else {
       c.setLookAt(...HOME.pos, ...HOME.target, true)
     }
