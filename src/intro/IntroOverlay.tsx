@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useIntro } from './introStore'
 import { useRoom } from '../state/store'
+import { nightness } from '../content/layout'
 import { door } from '../content/door'
 import './intro.css'
 
@@ -9,6 +10,7 @@ export function IntroOverlay() {
   const entered = useRoom((s) => s.entered)
   const { phase, knocks, hint, ask } = useIntro()
   const visits = useRoom((s) => s.visits)
+  const day = useRoom((s) => nightness(s.timeOfDay) < 0.5)
   const [gone, setGone] = useState(entered)
 
   // after walking in, let the curtain fade out, then drop the overlay entirely
@@ -24,7 +26,7 @@ export function IntroOverlay() {
   const open = !entered && phase === 'open'
 
   return (
-    <div className="nc-intro" data-phase={phase}>
+    <div className={`nc-intro${day ? ' day' : ''}`} data-phase={phase}>
       <div className="nc-vignette" />
       <div className={`nc-place${arrived && !entered ? ' show' : ''}`}>{door.place}</div>
       <div className={`nc-hint${showHint ? ' show' : ''}`}>

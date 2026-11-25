@@ -88,9 +88,29 @@ export function buildCorridor() {
     g.fillStyle = '#07101f'
     for (let i = 0; i < 14; i++) { g.beginPath(); g.arc(Math.random() * w, h - 20 + Math.random() * 30, 40 + Math.random() * 40, 0, 7); g.fill() }
   })
+  // the same view by day: soft blue sky, sunlit blocks, green canopy
+  const dayTex = canvasTex(512, 768, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h)
+    grd.addColorStop(0, '#8fc0ea'); grd.addColorStop(0.65, '#cfe5f5'); grd.addColorStop(1, '#e8f1f2')
+    g.fillStyle = grd; g.fillRect(0, 0, w, h)
+    g.fillStyle = 'rgba(255,255,255,.85)'
+    ;[[0.25, 0.16, 60], [0.38, 0.14, 44], [0.72, 0.3, 52], [0.83, 0.28, 36]].forEach(([x, y, r]) => { g.beginPath(); g.ellipse(x * w, y * h, r, r * 0.45, 0, 0, 7); g.fill() })
+    ;[[0, 0.62, 0.22], [0.18, 0.55, 0.2], [0.36, 0.7, 0.16], [0.5, 0.5, 0.22], [0.7, 0.64, 0.18], [0.86, 0.58, 0.2]].forEach(([x, y, bw], i) => {
+      g.fillStyle = i % 2 ? '#e9e4da' : '#dcd6cb'; g.fillRect(x * w, y * h, bw * w, h)
+      g.fillStyle = 'rgba(90,110,130,.35)'
+      for (let yy = y * h + 14; yy < h; yy += 22) for (let xx = x * w + 10; xx < (x + bw) * w - 10; xx += 18) g.fillRect(xx, yy, 8, 10)
+    })
+    for (let i = 0; i < 16; i++) {
+      g.fillStyle = i % 3 ? '#6f9a5a' : '#5d8a4c'
+      g.beginPath(); g.arc(Math.random() * w, h - 30 + Math.random() * 40, 45 + Math.random() * 45, 0, 7); g.fill()
+    }
+  })
   const winX = 2.05, winY = 1.45, winW = 1.05, winH = 1.55
   const win = new THREE.Group(); win.position.set(winX, winY, WALL_T / 2 + 0.005); group.add(win)
-  mesh(new THREE.PlaneGeometry(winW, winH), new THREE.MeshBasicMaterial({ map: nightTex, toneMapped: false, color: 0xb9c6dd }), 0, 0, 0, win, false)
+  const winDayMat = new THREE.MeshBasicMaterial({ map: dayTex, toneMapped: false, color: 0xe6e6e6 })
+  const winNightMat = new THREE.MeshBasicMaterial({ map: nightTex, toneMapped: false, color: 0xb9c6dd, transparent: true, depthWrite: false })
+  mesh(new THREE.PlaneGeometry(winW, winH), winDayMat, 0, 0, 0, win, false)
+  mesh(new THREE.PlaneGeometry(winW, winH), winNightMat, 0, 0, 0.001, win, false)
   const wf = mat(0xf8f4ec, { roughness: 0.4 })
   mesh(rbox(winW + 0.08, 0.06, 0.07, 0.015), wf, 0, winH / 2, 0.02, win)
   mesh(rbox(winW + 0.08, 0.08, 0.12, 0.015), wf, 0, -winH / 2, 0.04, win)
@@ -205,7 +225,7 @@ export function buildCorridor() {
   const winLight = new THREE.PointLight(0x7ea0ff, 1.6, 3.2, 2); winLight.position.set(winX, winY, 0.8)
   group.add(hemi, moon, spot, spot.target, fill, roomLight, winLight)
 
-  return { group, pivot, lever, hangCard, gapMat, spillMat, roomLight, lampGlow }
+  return { group, pivot, lever, hangCard, gapMat, spillMat, roomLight, lampGlow, hemi, moon, spot, fill, winLight, winNightMat }
 }
 export type Corridor = ReturnType<typeof buildCorridor>
 

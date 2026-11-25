@@ -46,3 +46,9 @@
   border: 7px solid transparent; border-bottom: 0; border-top-color: #f6eedd;
 }
 .nc-bubble.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+/* daytime: the corridor is bright, so the overlay text goes dark */
+.nc-intro.day { --cream: #3b3128; --hint: rgba(59, 49, 40, .6); --warm: #c9862a; }
+.nc-intro.day .nc-vignette { background: radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(120, 100, 70, .18) 100%); }
+.nc-intro.day .nc-replay { border-color: rgba(59, 49, 40, .3); }
+.nc-intro.day .nc-enter { background: rgba(255, 250, 240, .6); border-color: rgba(201, 134, 42, .6); }
