@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 import { useRoom } from '../../state/store'
-import { startCrackle, startMusic, needle } from '../../audio/audio'
+import { needle, playSong, songBass, songDuration, songEnded, songTime, startCrackle, stopSong } from '../../audio/audio'
 import { coverTexture, recordTexture, strobeTexture } from './textures'
 import { Notes } from './Notes'
 
@@ -24,7 +24,6 @@ const ARM_Y = REC_Y + 0.02 // arm tube height with the stylus on the record
 const LIFT = Math.atan(0.012 / L) // cue lift: 12 mm at the headshell
 const LEAD_IN = 0.145
 const RUN_OUT = 0.072
-const SIDE_SECONDS = 360 // a side lasts 6 minutes, then the arm returns by itself
 const RPM = (33.33 / 60) * Math.PI * 2
 
 /** Arm yaw (rad, about the pivot) that puts the stylus at `r` from the spindle. Yaw 0 = on the rest, pointing +z. */
@@ -320,7 +319,8 @@ export function Turntable() {
   const coneR = useRef<THREE.Group>(null)
   const musicOn = useRoom((s) => s.musicOn)
 
-  const st = useRef({ lid: 0, speed: 0, yaw: 0, lift: 1, progress: 0, down: false, beat: 0 })
+  const st = useRef({ lid: 0, speed: 0, yaw: 0, lift: 1, progress: 0, down: false, beat: 0, avg: 0 })
+  if (import.meta.env.DEV) (window as unknown as { __deckState: unknown }).__deckState = st.current
 
   // something else switched the music off (e.g. bedtime) → lift the arm
   useEffect(() => useRoom.subscribe((s, prev) => {
@@ -333,9 +333,10 @@ export function Turntable() {
 
   useEffect(() => {
     if (!musicOn) return
-    const stopMusic = startMusic()
-    const stopCrackle = startCrackle()
-    return () => (stopMusic(), stopCrackle())
+    // the song picks up where the stylus landed, so lifting and dropping again resumes
+    playSong(st.current.progress * songDuration())
+    const stopCrackle = startCrackle(0.08)
+    return () => (stopSong(), stopCrackle())
   }, [musicOn])
 
   useFrame((_, rawDt) => {
@@ -361,9 +362,14 @@ export function Turntable() {
           }
         }
       } else {
-        s.progress = Math.min(1, s.progress + dt / SIDE_SECONDS)
+        // the arm follows the song: lead-in at 0:00, run-out at the last second
+        const t = songTime()
+        s.progress = Math.min(1, t !== null ? t / songDuration() : s.progress + dt / songDuration())
         s.yaw = target
-        if (s.progress >= 1) deck.want = false
+        if (s.progress >= 1 || songEnded()) {
+          s.progress = 1
+          deck.want = false // run-out groove: the arm returns by itself
+        }
       }
     } else {
       if (s.down) {
@@ -386,10 +392,13 @@ export function Turntable() {
     hinge.current!.rotation.x = -1.25 * smooth(s.lid)
     led.current!.emissiveIntensity = s.speed > 0.02 || deck.want ? 2.2 : 0
 
-    // speakers breathe on the 120 bpm loop
-    s.beat += dt
-    const kick = s.down ? Math.exp(-((s.beat % 0.5) / 0.08)) : 0
-    coneL.current!.position.z = coneR.current!.position.z = kick * 0.003
+    // speaker cones move with the song's bass
+    // (the punch above the running average, so beats pump instead of the cone just sitting out)
+    const bass = s.down ? songBass() : 0
+    s.avg += (bass - s.avg) * Math.min(1, dt * 3)
+    const punch = Math.min(1, Math.max(0, (bass - s.avg) * 8))
+    s.beat += (punch - s.beat) * Math.min(1, dt * 25)
+    coneL.current!.position.z = coneR.current!.position.z = s.beat * 0.0035
   })
 
   return (

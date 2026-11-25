@@ -134,7 +134,7 @@ export function needle(down = true) {
 }
 
 /** Vinyl surface noise: a soft hiss bed with random crackles and the odd pop. Returns a stop function. */
-export function startCrackle() {
+export function startCrackle(level = 0.22) {
   const a = audio()
   const len = a.sampleRate * 4
   const buf = a.createBuffer(1, len, a.sampleRate)
@@ -154,7 +154,7 @@ export function startCrackle() {
   bp.Q.value = 0.6
   const g = a.createGain()
   g.gain.value = 0
-  g.gain.linearRampToValueAtTime(0.22, a.currentTime + 0.3)
+  g.gain.linearRampToValueAtTime(level, a.currentTime + 0.3)
   src.connect(bp).connect(g).connect(a.destination)
   src.start()
   return () => {
@@ -163,4 +163,97 @@ export function startCrackle() {
     g.gain.linearRampToValueAtTime(0, a.currentTime + 0.4)
     setTimeout(() => src.stop(), 500)
   }
+}
+
+// ------------------------------------------------------------------ the record: 交换余生 (public/music/song.mp3, 128 kbps)
+const SONG_URL = `${import.meta.env.BASE_URL}music/song.mp3`
+/** Fallback length (s) until the file's metadata has loaded. */
+export const SONG_SECONDS = 276.4
+let song: HTMLAudioElement | null = null
+let songGain: GainNode | null = null
+let songLevel: AnalyserNode | null = null
+let songWanted = false
+let pauseTimer: ReturnType<typeof setTimeout> | undefined
+
+function songEl() {
+  if (!song) {
+    song = new Audio(SONG_URL)
+    song.preload = 'auto'
+  }
+  return song
+}
+
+/**
+ * Call from the click itself (a user gesture): hooks the song into the shared AudioContext and
+ * "unlocks" it, so Safari lets it start a few seconds later when the needle lands.
+ */
+export function primeSong() {
+  const a = audio()
+  const el = songEl()
+  if (!songGain) {
+    const src = a.createMediaElementSource(el)
+    songGain = a.createGain()
+    songGain.gain.value = 0
+    songLevel = a.createAnalyser()
+    songLevel.fftSize = 256
+    // a touch of vinyl warmth: roll off the very top
+    const lp = a.createBiquadFilter()
+    lp.type = 'lowpass'
+    lp.frequency.value = 11000
+    src.connect(lp).connect(songGain).connect(a.destination)
+    songGain.connect(songLevel)
+    if (el.paused) el.play().then(() => songWanted || el.pause()).catch(() => {})
+  }
+}
+
+/** Song length in seconds (metadata if loaded). */
+export function songDuration() {
+  const d = song?.duration
+  return d && Number.isFinite(d) ? d : SONG_SECONDS
+}
+
+/** Playback position in seconds, or null while it isn't actually playing. */
+export function songTime() {
+  return song && songWanted && !song.paused ? song.currentTime : null
+}
+
+export function songEnded() {
+  return !!song?.ended
+}
+
+/** Start the song at `at` seconds with a short fade-in (needle drop). */
+export function playSong(at: number) {
+  primeSong()
+  const a = audio()
+  const el = songEl()
+  songWanted = true
+  clearTimeout(pauseTimer)
+  el.currentTime = Math.min(Math.max(0, at), Math.max(0, songDuration() - 0.5))
+  void el.play().catch(() => {})
+  const g = songGain!.gain
+  g.cancelScheduledValues(a.currentTime)
+  g.setValueAtTime(0, a.currentTime)
+  g.linearRampToValueAtTime(0.9, a.currentTime + 0.35)
+}
+
+/** Fade out and pause (arm lifted). */
+export function stopSong() {
+  if (!song || !songGain) return
+  const a = audio()
+  songWanted = false
+  const g = songGain.gain
+  g.cancelScheduledValues(a.currentTime)
+  g.setValueAtTime(g.value, a.currentTime)
+  g.linearRampToValueAtTime(0, a.currentTime + 0.25)
+  pauseTimer = setTimeout(() => songWanted || song!.pause(), 300)
+}
+
+const bins = new Uint8Array(128)
+/** Low-frequency loudness of the song, 0..1 (drives the speaker cones). */
+export function songBass() {
+  if (!songLevel || !songWanted) return 0
+  songLevel.getByteFrequencyData(bins)
+  let sum = 0
+  for (let i = 1; i < 6; i++) sum += bins[i]
+  return sum / (5 * 255)
 }
