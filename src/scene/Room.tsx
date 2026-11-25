@@ -1,6 +1,8 @@
 import { RoundedBox } from '@react-three/drei'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
+import { Suspense } from 'react'
+import { Avatar } from '../avatar/Avatar'
 
 /**
  * Grey-box PGPR Type C room (about 3 x 3.6 m, open on +x and +z like a diorama).
@@ -65,8 +67,10 @@ export function Room() {
       <Focusable id="letter" position={[0.9, 0.79, -1.35]} distance={0.8}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
       </Focusable>
-      <Focusable id="avatar" position={[0.3, 0.35, 0.3]} distance={1.4}>
-        <mesh castShadow><capsuleGeometry args={[0.14, 0.3, 8, 16]} /><meshStandardMaterial color="#6f6f6f" /></mesh>
+      <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
+        <Suspense fallback={null}>
+          <Avatar />
+        </Suspense>
       </Focusable>
     </group>
   )
