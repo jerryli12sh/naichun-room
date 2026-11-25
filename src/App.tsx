@@ -5,6 +5,7 @@ import { Lights } from './scene/Lights'
 import { DoorIntro } from './intro/DoorIntro'
 import { IntroOverlay } from './intro/IntroOverlay'
 import { useRoom } from './state/store'
+import { StickerOverlay } from './objects/croc'
 
 export function App() {
   const clearFocus = useRoom((s) => s.clearFocus)
@@ -29,6 +30,7 @@ export function App() {
         )}
       </Canvas>
       <IntroOverlay />
+      {entered && <StickerOverlay />}
     </>
   )
 }
