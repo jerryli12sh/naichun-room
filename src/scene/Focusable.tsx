@@ -6,8 +6,9 @@ import { useRoom } from '../state/store'
 type Props = {
   id: string
   position: [number, number, number]
+  /** Camera distance when focused. */
   distance?: number
-  /** Camera direction when focused, see FocusTarget.dir. */
+  /** Preferred direction from the object to the camera (any length). The rig swings away from it if something blocks the view. */
   dir?: [number, number, number]
   /** How far it rises on hover. Use 0 for things fixed to a wall. */
   hoverLift?: number

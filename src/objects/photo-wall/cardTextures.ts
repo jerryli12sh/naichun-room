@@ -1,12 +1,11 @@
 import * as THREE from 'three'
-import 'lxgw-wenkai-webfont/lxgwwenkai-regular.css'
 import type { PhotoEntry } from '../../content/photos'
 import { photoSign } from '../../content/photos'
+import { FONT_HAND as FONT } from '../../content/fonts'
 
 /** Canvas size for one face. Matches the card's 5:6 polaroid ratio. */
 export const CW = 500
 export const CH = 600
-const FONT = '"LXGW WenKai", "Kaiti SC", "STKaiti", serif'
 const INK = '#3b3631'
 const PAPER_FRONT = '#fbf8f1'
 const PAPER_BACK = '#f5ecdc'
