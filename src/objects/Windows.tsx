@@ -64,6 +64,7 @@ void main() {
   // beads darken a little (they refract the darker ground) and glint at the top
   col = mix(col, tint * 0.75, clamp(m, 0.0, 1.0));
   col = mix(col, vec3(1.0), clamp(rim, 0.0, 1.0));
+  rim *= 1.0 - uNight * 0.65;
   alpha += m * 0.14 + rim * 0.5 + trail * 0.1;
   gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.85));
 }`

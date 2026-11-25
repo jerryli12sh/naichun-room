@@ -173,6 +173,8 @@ function plantTrees(): Tree[] {
     const x = near ? range(-45, 45) : range(-160, 160)
     const z = near ? range(-7, -40) : range(-30, -190)
     if (inBlock(x, z)) continue
+    // keep the lawn and path right below the window open
+    if (x > -26 && x < 16 && z > -30) continue
     const kind = rand() < 0.14 ? 'palm' : rand() < 0.55 ? 'rain' : 'round'
     const h = kind === 'palm' ? range(9, 14) : kind === 'rain' ? range(11, 19) : range(7, 12)
     trees.push({ x, z, h, r: kind === 'rain' ? range(4.5, 7.5) : range(2.6, 4), kind })
@@ -186,8 +188,8 @@ function plantTrees(): Tree[] {
         const z = path[i][1] + (path[i + 1][1] - path[i][1]) * t + range(-4, 4)
         if (!inBlock(x, z)) trees.push({ x, z, h: range(1.2, 2.4), r: range(1.2, 2.2), kind: 'shrub' })
       }
-  // a few big rain trees right below the window so the view has a foreground
-  trees.push({ x: -5, z: -10, h: 14.5, r: 7, kind: 'rain' }, { x: 11, z: -14, h: 13.5, r: 6, kind: 'rain' }, { x: -16, z: -16, h: 12, r: 4, kind: 'round' })
+  // two big rain trees off to the sides frame the view without hiding the lawn straight below
+  trees.push({ x: -31, z: -15, h: 15, r: 7, kind: 'rain' }, { x: 24, z: -19, h: 14, r: 6.5, kind: 'rain' }, { x: -8, z: -27, h: 11, r: 5, kind: 'rain' })
   return trees
 }
 
@@ -219,7 +221,7 @@ function Trees() {
       const trunkH = t.kind === 'shrub' ? 0 : t.h * (t.kind === 'rain' ? 0.5 : 0.42)
       if (t.kind !== 'shrub')
         logs.push(new THREE.Matrix4().compose(new THREE.Vector3(t.x, g, t.z), new THREE.Quaternion(), new THREE.Vector3(t.kind === 'rain' ? 0.55 : 0.32, trunkH, t.kind === 'rain' ? 0.55 : 0.32)))
-      const blobsN = t.kind === 'rain' ? 16 : t.kind === 'shrub' ? 3 : 8
+      const blobsN = (t.kind === 'rain' ? 16 : t.kind === 'shrub' ? 3 : 8) * (isLowEnd ? 0.65 : 1)
       for (let k = 0; k < blobsN; k++) {
         const a = rand() * Math.PI * 2
         const rr = t.r * Math.sqrt(rand()) * (t.kind === 'rain' ? 0.75 : 0.45)
@@ -232,26 +234,33 @@ function Trees() {
         })
       }
     }
-    // canopies: lumpy spheres, a darker underside so they read as volumes from afar
-    const cg = mergeVertices(new THREE.IcosahedronGeometry(1, 3).deleteAttribute('normal').deleteAttribute('uv'))
-    const p = cg.attributes.position as THREE.BufferAttribute
-    const col: number[] = []
-    for (let i = 0; i < p.count; i++) {
-      const v = new THREE.Vector3().fromBufferAttribute(p, i)
-      const bump =
-        1 + 0.1 * Math.sin(v.x * 7.1 + v.y * 3.3) * Math.cos(v.z * 6.3 - v.y * 2.1) + 0.07 * Math.sin(v.y * 17 + v.x * 13) * Math.sin(v.z * 15 - v.x * 5)
-      v.multiplyScalar(bump)
-      p.setXYZ(i, v.x, v.y, v.z)
-      const ao = THREE.MathUtils.lerp(0.58, 1.06, THREE.MathUtils.smoothstep(v.y, -0.9, 0.7)) * (0.84 + 0.32 * (bump - 0.85))
-      const sp = 0.9 + 0.2 * Math.abs(Math.sin(i * 12.9898) * 43758.5453 % 1)
-      col.push(ao * sp, ao * sp * 1.02, ao * sp * 0.96)
+    // canopies: lumpy spheres, a darker underside so they read as volumes from afar; finer mesh up close
+    const blobGeo = (detail: number) => {
+      const cg = mergeVertices(new THREE.IcosahedronGeometry(1, detail).deleteAttribute('normal').deleteAttribute('uv'))
+      const p = cg.attributes.position as THREE.BufferAttribute
+      const col: number[] = []
+      for (let i = 0; i < p.count; i++) {
+        const v = new THREE.Vector3().fromBufferAttribute(p, i)
+        const bump =
+          1 + 0.1 * Math.sin(v.x * 7.1 + v.y * 3.3) * Math.cos(v.z * 6.3 - v.y * 2.1) + 0.07 * Math.sin(v.y * 17 + v.x * 13) * Math.sin(v.z * 15 - v.x * 5)
+        v.multiplyScalar(bump)
+        p.setXYZ(i, v.x, v.y, v.z)
+        const ao = THREE.MathUtils.lerp(0.58, 1.06, THREE.MathUtils.smoothstep(v.y, -0.9, 0.7)) * (0.84 + 0.32 * (bump - 0.85))
+        col.push(ao, ao * 1.02, ao * 0.96)
+      }
+      cg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
+      cg.computeVertexNormals()
+      return cg
     }
-    cg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3))
-    cg.computeVertexNormals()
-    const canopy = new THREE.InstancedMesh(cg, outside(new THREE.MeshStandardMaterial({ roughness: 0.92, vertexColors: true }), { sway: 0.22 }), blobs.length)
-    blobs.forEach((b, i) => {
-      canopy.setMatrixAt(i, new THREE.Matrix4().compose(b.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), b.s))
-      canopy.setColorAt(i, b.c)
+    const canopyMat = outside(new THREE.MeshStandardMaterial({ roughness: 0.92, vertexColors: true }), { sway: 0.22, leafy: true })
+    const isNear = (b: { p: THREE.Vector3 }) => Math.hypot(b.p.x, b.p.z + 2) < 70
+    const canopy = [blobs.filter(isNear), blobs.filter((b) => !isNear(b))].map((list, k) => {
+      const mesh = new THREE.InstancedMesh(blobGeo(k === 0 && !isLowEnd ? 2 : 1), canopyMat, list.length)
+      list.forEach((b, i) => {
+        mesh.setMatrixAt(i, new THREE.Matrix4().compose(b.p, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rand() * 6, 0)), b.s))
+        mesh.setColorAt(i, b.c)
+      })
+      return mesh
     })
     const tg = new THREE.CylinderGeometry(0.6, 1, 1, 8)
     tg.translate(0, 0.5, 0)
@@ -270,7 +279,9 @@ function Trees() {
   }, [])
   return (
     <group>
-      <primitive object={canopy} />
+      {canopy.map((c, i) => (
+        <primitive key={i} object={c} />
+      ))}
       <primitive object={trunks} />
       <primitive object={fronds} />
     </group>

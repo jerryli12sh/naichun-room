@@ -125,7 +125,7 @@ function patchVertex(s: { vertexShader: string; uniforms: Record<string, THREE.I
 }
 
 /** Make a material draw only through the window openings (stencil 1) and fade into the haze with distance. */
-export function outside<M extends THREE.Material>(m: M, opts: { sway?: number; haze?: boolean } = {}): M {
+export function outside<M extends THREE.Material>(m: M, opts: { sway?: number; haze?: boolean; leafy?: boolean } = {}): M {
   m.stencilWrite = true
   m.stencilRef = 1
   m.stencilFunc = THREE.EqualStencilFunc
@@ -134,8 +134,30 @@ export function outside<M extends THREE.Material>(m: M, opts: { sway?: number; h
   m.stencilZPass = THREE.KeepStencilOp
   const sway = opts.sway ?? 0
   const haze = opts.haze ?? true
+  const leafy = !!opts.leafy
   m.onBeforeCompile = (s) => {
     patchVertex(s, sway)
+    if (leafy)
+      // foliage: clumps of leaves as dark gaps and bright tips, in world space so instances differ
+      s.fragmentShader = s.fragmentShader
+        .replace(
+          '#include <common>',
+          `#include <common>
+          ${haze ? '' : 'varying vec3 vOutWorld;'}
+          float lhash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+          float lnoise(vec3 p) {
+            vec3 i = floor(p), f = fract(p); vec3 u = f * f * (3.0 - 2.0 * f);
+            return mix(mix(mix(lhash(i), lhash(i + vec3(1,0,0)), u.x), mix(lhash(i + vec3(0,1,0)), lhash(i + vec3(1,1,0)), u.x), u.y),
+                       mix(mix(lhash(i + vec3(0,0,1)), lhash(i + vec3(1,0,1)), u.x), mix(lhash(i + vec3(0,1,1)), lhash(i + vec3(1,1,1)), u.x), u.y), u.z);
+          }`,
+        )
+        .replace(
+          '#include <color_fragment>',
+          `#include <color_fragment>
+          float lf = lnoise(vOutWorld * 1.7) * 0.6 + lnoise(vOutWorld * 5.3) * 0.4;
+          diffuseColor.rgb *= 0.62 + 0.6 * smoothstep(0.25, 0.8, lf);
+          diffuseColor.rgb += vec3(0.04, 0.06, 0.0) * smoothstep(0.7, 0.95, lf);`,
+        )
     if (haze)
       s.fragmentShader = s.fragmentShader
         .replace(
@@ -150,7 +172,7 @@ export function outside<M extends THREE.Material>(m: M, opts: { sway?: number; h
           #include <dithering_fragment>`,
         )
   }
-  m.customProgramCacheKey = () => `outside-${sway}-${haze}`
+  m.customProgramCacheKey = () => `outside-${sway}-${haze}-${leafy}`
   return m
 }
 
