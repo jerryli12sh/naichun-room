@@ -31,7 +31,7 @@ export function Room() {
       <LightSwitch />
 
       {/* placeholders: one per feature branch */}
-      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={1.75} dir={[1, 0.12, 0.28]} hoverLift={0} squash={false}>
+      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={2.1} dir={[1, 0.1, 0.15]} hoverLift={0} squash={false}>
         <PhotoWall />
       </Focusable>
       <Windows />
