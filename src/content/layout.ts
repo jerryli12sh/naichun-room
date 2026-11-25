@@ -49,3 +49,13 @@ export function nightness(hour: number) {
  * Human-sized next to the furniture: the desk top (0.78) is about at his waist.
  */
 export const AVATAR_HEIGHT = 1.5
+
+/**
+ * Record console (turntable corner): low cabinet against the left wall at the foot of the bed,
+ * between the bed (ends z ~0.24) and the light switch (z 1.55). x/z = centre on the floor; the long side
+ * (len) runs along the wall, the front faces +x. h = height of the top surface.
+ */
+export const RECORD_CONSOLE = { x: -ROOM.w / 2 + 0.22, z: 0.92, len: 0.92, depth: 0.4, h: 0.53 } as const
+
+/** Where the avatar can stand to listen while a record plays (facing the console, i.e. -x). */
+export const LISTEN_SPOT = { x: -ROOM.w / 2 + 0.75, z: 0.95, yaw: -Math.PI / 2 } as const

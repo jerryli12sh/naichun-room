@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
-import { useRoom } from '../state/store'
-import { startMusic } from '../audio/audio'
 
 const NOTE_COLORS = ['#d2802a', '#5b6f95', '#3f8f35']
 
@@ -21,8 +18,8 @@ function noteTexture(ch: string, color: string) {
   return t
 }
 
-/** Little ♪ sprites that drift up from the player while music is on. */
-function Notes({ on }: { on: boolean }) {
+/** Little ♪ sprites that drift up from the turntable while music is on. */
+export function Notes({ on }: { on: boolean }) {
   const textures = useMemo(() => ['♪', '♫'].flatMap((ch) => NOTE_COLORS.map((c) => noteTexture(ch, c))), [])
   const pool = useMemo(
     () => Array.from({ length: 8 }, () => ({ sprite: new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false })), t: -1, sway: 0 })),
@@ -60,39 +57,3 @@ function Notes({ on }: { on: boolean }) {
   return <group ref={group} />
 }
 
-/**
- * Small CD player on the bedside cabinet. Click toggles musicOn: a generic ambient loop
- * (no playlist), the disc spins, the LED lights and notes float up.
- * Rendered inside a Focusable, which handles hover, click squash and the camera.
- */
-export function CdPlayer() {
-  const musicOn = useRoom((s) => s.musicOn)
-  const disc = useRef<THREE.Mesh>(null)
-  useEffect(() => {
-    if (!musicOn) return
-    return startMusic()
-  }, [musicOn])
-  useFrame((_, dt) => {
-    if (musicOn) disc.current!.rotation.y += dt * 8
-  })
-  return (
-    <group>
-      <RoundedBox args={[0.26, 0.06, 0.2]} radius={0.02} position={[0, 0.03, 0]} castShadow>
-        <meshStandardMaterial color="#e7e2d6" roughness={0.45} />
-      </RoundedBox>
-      <mesh ref={disc} position={[-0.03, 0.064, 0]}>
-        <cylinderGeometry args={[0.075, 0.075, 0.006, 40]} />
-        <meshStandardMaterial color="#dfe6f0" metalness={0.3} roughness={0.2} emissive="#334466" emissiveIntensity={0.15} />
-      </mesh>
-      <mesh position={[-0.03, 0.068, 0]}>
-        <cylinderGeometry args={[0.02, 0.02, 0.008, 20]} />
-        <meshStandardMaterial color="#f2c24b" />
-      </mesh>
-      <mesh position={[0.1, 0.045, 0.1]}>
-        <sphereGeometry args={[0.008, 8, 8]} />
-        <meshBasicMaterial color={musicOn ? '#5dff7a' : '#444444'} toneMapped={false} />
-      </mesh>
-      <Notes on={musicOn} />
-    </group>
-  )
-}
