@@ -3,15 +3,18 @@ import * as THREE from 'three'
 import { Focusable } from '../../scene/Focusable'
 import { useRoom } from '../../state/store'
 import { palette } from '../../content/palette'
-import { BED_TOP } from './crocState'
+import { BED_TOP, BED_X } from './crocState'
+import { SURFACES } from '../../content/layout'
 
-/** Little green sticker notebook lying on the bed; opening it shows the croc sticker album. */
+const BED_Z = SURFACES.bed.z
+
+/** Little green sticker notebook lying on the folded duvet at the foot of the bed; opening it shows the croc sticker album. */
 export function AlbumBook() {
   const cover = useTexture(`${import.meta.env.BASE_URL}stickers/hi.jpg`)
   cover.colorSpace = THREE.SRGBColorSpace
   const open = () => useRoom.getState().set({ albumOpen: true })
   return (
-    <Focusable id="croc-album" position={[-0.72, BED_TOP + 0.012, 0.22]} distance={0.9} onActivate={open}>
+    <Focusable id="croc-album" position={[BED_X + 0.2, BED_TOP + 0.1, BED_Z + 0.6]} distance={0.9} onActivate={open}>
       <group rotation-y={0.35}>
         <RoundedBox args={[0.2, 0.024, 0.15]} radius={0.008} castShadow>
           <meshStandardMaterial color={palette.croc} roughness={0.9} />

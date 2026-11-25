@@ -6,9 +6,10 @@ import { useRoom } from '../../state/store'
 import { palette } from '../../content/palette'
 import { crocDisgust, tomatoYeetLines } from '../../content/stickers'
 import { tomatoSvg } from './stickerArt'
+import { BACK_Z, WINDOWS } from '../../content/layout'
 import { awardSticker, BED_RECT, BED_TOP, crocWorldPos, useCroc } from './crocState'
 
-const BACK_WALL_Z = -1.755 // front face of the back wall
+const BACK_WALL_Z = BACK_Z + 0.005 // just in front of the back wall
 const svgUrl = (inner: string, vb = '-30 -30 60 60') =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="256" height="256">${inner}</svg>`)}`
 
@@ -20,7 +21,13 @@ function useSvgTexture(url: string) {
   }, [url])
 }
 
-const randomWallSpot = (): [number, number, number] => [-1.2 + Math.random() * 1.1, 1.5 + Math.random() * 0.9, BACK_WALL_Z]
+/** Bits of back wall that are not window: above the bed, the strip between the windows, above the windows. */
+const WALL_SPOTS: (() => [number, number])[] = [
+  () => [-1.3 + Math.random() * 0.75, 1.5 + Math.random() * 0.9],
+  () => [WINDOWS.narrow.cx + WINDOWS.narrow.w / 2 + 0.14, 1.2 + Math.random() * 0.9],
+  () => [-1.2 + Math.random() * 2.4, WINDOWS.wide.y0 + WINDOWS.wide.h + 0.2],
+]
+const randomWallSpot = (): [number, number, number] => [...WALL_SPOTS[Math.floor(Math.random() * WALL_SPOTS.length)](), BACK_WALL_Z]
 
 /**
  * 番茄禁区: a tomato sticker stuck on the wall. A click flicks it spinning out of the room;
@@ -29,7 +36,7 @@ const randomWallSpot = (): [number, number, number] => [-1.2 + Math.random() * 1
 export function WallTomato() {
   const tex = useSvgTexture(svgUrl(tomatoSvg(0, 0, 1)))
   const ref = useRef<THREE.Mesh>(null)
-  const [home, setHome] = useState<[number, number, number]>([-0.35, 1.95, BACK_WALL_Z])
+  const [home, setHome] = useState<[number, number, number]>([WINDOWS.narrow.cx + WINDOWS.narrow.w / 2 + 0.14, 1.75, BACK_WALL_Z])
   const [say, setSay] = useState<string | null>(null)
   const flying = useRef<number | null>(null)
 
@@ -74,7 +81,7 @@ export function WallTomato() {
         onPointerOver={() => (document.body.style.cursor = 'pointer')}
         onPointerOut={() => (document.body.style.cursor = 'auto')}
       >
-        <circleGeometry args={[0.13, 32]} />
+        <circleGeometry args={[0.11, 32]} />
         <meshStandardMaterial map={tex} transparent alphaTest={0.05} roughness={0.7} />
       </mesh>
       {say && (
@@ -99,7 +106,7 @@ export function RoamingTomato() {
   const g = useRef<THREE.Group>(null)
   const [visible, setVisible] = useState(false)
   const [hello, setHello] = useState(false)
-  const state = useRef({ mode: 'hidden' as 'hidden' | 'rolling' | 'idle' | 'drag' | 'fall', t0: 0, target: new THREE.Vector3(...REST), lastFlee: 0 })
+  const state = useRef({ mode: 'hidden' as 'hidden' | 'rolling' | 'idle' | 'drag' | 'fall', t0: 0, target: new THREE.Vector3(...REST), lastFlee: 0, awarded: false })
   const hit = useMemo(() => new THREE.Vector3(), [])
 
   useEffect(() => {
@@ -132,10 +139,13 @@ export function RoamingTomato() {
       o.position.lerp(s.target, 0.5)
       o.rotation.z = Math.sin(now / 90) * 0.15
       const [cx, , cz] = crocWorldPos(useCroc.getState().spot)
-      if (Math.hypot(o.position.x - cx, o.position.z - cz) < 0.32 && now - s.lastFlee > 900) {
+      if (Math.hypot(o.position.x - cx, o.position.z - cz) < 0.28 && now - s.lastFlee > 900) {
         s.lastFlee = now
         useCroc.getState().flee(crocDisgust[Math.floor(Math.random() * crocDisgust.length)])
-        if (!useRoom.getState().stickersFound.includes('notomato')) setTimeout(() => awardSticker('notomato'), 900)
+        if (!s.awarded && !useRoom.getState().stickersFound.includes('notomato')) {
+          s.awarded = true // several flees can happen before the delayed award lands
+          setTimeout(() => awardSticker('notomato'), 900)
+        }
       }
     } else if (s.mode === 'fall') {
       o.position.x = s.target.x

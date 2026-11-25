@@ -1,13 +1,17 @@
 import { create } from 'zustand'
 import { useRoom } from '../../state/store'
+import { SURFACES } from '../../content/layout'
 
 /** Croc + tomato internals shared inside this branch only (other branches use the main store). */
 
 /** The croc sits at one of two spots on the bed and hops to the other when a tomato comes near. */
-export const BED_X = -0.95
-export const BED_TOP = 0.455
-export const CROC_SPOTS_Z = [-1.0, -0.15] as const
-export const BED_RECT = { x0: -1.45, x1: -0.45, z0: -1.6, z1: 0.4 }
+const BED = SURFACES.bed
+export const BED_X = BED.x
+export const BED_TOP = BED.y - 0.02 // sink a little into the mattress
+/** Just in front of the pillow, and mid-bed before the folded duvet. */
+export const CROC_SPOTS_Z = [BED.z - 0.45, BED.z + 0.15] as const
+/** Mattress footprint, for dropping the tomato onto the bed. */
+export const BED_RECT = { x0: BED.x - 0.47, x1: BED.x + 0.47, z0: BED.z - 1.0, z1: BED.z + 1.0 }
 
 type CrocState = {
   spot: 0 | 1

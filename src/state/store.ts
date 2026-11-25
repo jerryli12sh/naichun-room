@@ -30,6 +30,7 @@ export type RoomState = {
   albumOpen: boolean // crocodile sticker album overlay (branch 6)
   letterOpened: boolean
   dragging: boolean // something is being dragged; camera orbit pauses
+  alarmRangAt: number // Date.now() of the last alarm ring, 0 = never (branch 3: avatar goes to bed / wakes up)
   focus: FocusTarget | null
   setFocus: (f: FocusTarget) => void
   clearFocus: () => void
@@ -55,6 +56,7 @@ export const useRoom = create<RoomState>()(
       albumOpen: false,
       letterOpened: false,
       dragging: false,
+      alarmRangAt: 0,
       focus: null,
       setFocus: (focus) => set({ focus }),
       clearFocus: () => set({ focus: null }),
