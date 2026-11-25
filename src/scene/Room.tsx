@@ -7,6 +7,8 @@ import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
 import { Avatar } from '../avatar/Avatar'
+import { Desk } from '../objects/desk/Desk'
+import { Letter } from '../objects/letter/Letter'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
 import { Windows } from '../objects/Windows'
 import { CdPlayer } from '../objects/CdPlayer'
@@ -40,9 +42,9 @@ export function Room() {
         <AlarmClock />
       </Focusable>
       <CrocCorner />
-      <Focusable id="letter" position={[SURFACES.desk.x - 0.1, SURFACES.desk.y + 0.005, SURFACES.desk.z + 0.12]} distance={0.8}>
-        <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
-      </Focusable>
+      {/* desk-top props + letter + ending (branch 7) */}
+      <Desk />
+      <Letter />
       <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
         <Suspense fallback={null}>
           <Avatar />
