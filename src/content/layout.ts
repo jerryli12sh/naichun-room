@@ -35,3 +35,9 @@ export function nightness(hour: number) {
   if (h >= 17) return (h - 17) / 3
   return 1 - (h - 5) / 3
 }
+
+/**
+ * 乃春's standing height in metres, everywhere he appears (room and door intro).
+ * Human-sized next to the furniture: the desk top (0.78) is about at his waist.
+ */
+export const AVATAR_HEIGHT = 1.5

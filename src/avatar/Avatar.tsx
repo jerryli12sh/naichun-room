@@ -1,25 +1,48 @@
-import { useEffect } from 'react'
+import { useMemo } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { AVATAR_HEIGHT } from '../content/layout'
 
 const URL = `${import.meta.env.BASE_URL}models/naichun.glb`
 
 /**
- * Static image-to-3D model of 乃春 (about 1 unit tall, centred on the origin, faces -Z).
- * Branch 3 adds rigging, animations and the behaviour state machine.
+ * The image-to-3D model of 乃春, normalised: feet on y = 0, centred on x/z, facing +z, `height` tall.
+ * Each call gets its own copy, so the door intro and the room can both show him.
  */
-export function Avatar({ height = 0.6 }: { height?: number }) {
+export function useAvatarModel(height = AVATAR_HEIGHT) {
   const { scene } = useGLTF(URL)
-  useEffect(() => {
-    scene.traverse((o) => {
+  return useMemo(() => {
+    const model = scene.clone(true)
+    model.traverse((o) => {
       const m = o as THREE.Mesh
       if (!m.isMesh) return
       m.castShadow = true
-      const mat = m.material as THREE.MeshStandardMaterial
-      if ('metalness' in mat) mat.metalness = 0
+      // The GLB leaves metalness out, so three.js uses the glTF default of 1 and he renders dark.
+      // Same fix as the plain demo: metalness 0, roughness 0.65, original texture kept.
+      for (const mat of [m.material].flat() as THREE.MeshStandardMaterial[]) {
+        if (!('metalness' in mat)) continue
+        mat.metalness = 0
+        mat.roughness = 0.65
+        mat.metalnessMap = null
+        mat.needsUpdate = true
+      }
     })
-  }, [scene])
-  return <primitive object={scene} scale={height} position-y={height / 2} rotation-y={Math.PI} />
+    model.rotation.y = Math.PI // the GLB faces -z
+    const box = new THREE.Box3().setFromObject(model)
+    model.scale.setScalar(height / box.getSize(new THREE.Vector3()).y)
+    box.setFromObject(model)
+    const c = box.getCenter(new THREE.Vector3())
+    model.position.set(-c.x, -box.min.y, -c.z)
+    const holder = new THREE.Group()
+    holder.add(model)
+    return { holder, depth: box.max.z - box.min.z, width: box.max.x - box.min.x }
+  }, [scene, height])
+}
+
+/** Static model, feet on the origin. Use this anywhere he only needs to stand there (the door intro). */
+export function Avatar({ height = AVATAR_HEIGHT }: { height?: number }) {
+  const { holder } = useAvatarModel(height)
+  return <primitive object={holder} />
 }
 
 useGLTF.preload(URL)
