@@ -6,7 +6,14 @@ import { useRoom } from '../state/store'
 type Props = {
   id: string
   position: [number, number, number]
+  /** Camera distance when focused. */
   distance?: number
+  /** Preferred direction from the object to the camera (any length). The rig swings away from it if something blocks the view. */
+  dir?: [number, number, number]
+  /** How far it rises on hover. Use 0 for things fixed to a wall. */
+  hoverLift?: number
+  /** Squash on click. Turn off for big flat things like walls. */
+  squash?: boolean
   onActivate?: () => void
   children: ReactNode
 }
@@ -15,21 +22,23 @@ type Props = {
  * Shared "clickable object" behaviour: hover lifts it a little, a click squashes,
  * flies the camera over, then calls onActivate. Every object branch wraps its mesh in this.
  */
-export function Focusable({ id, position, distance, onActivate, children }: Props) {
+export function Focusable({ id, position, distance, dir, hoverLift = 0.04, squash = true, onActivate, children }: Props) {
   const [hover, setHover] = useState(false)
   const [pressed, setPressed] = useState(false)
   const setFocus = useRoom((s) => s.setFocus)
   const { y, scale } = useSpring({
-    y: position[1] + (hover ? 0.04 : 0),
+    y: position[1] + (hover ? hoverLift : 0),
     scale: pressed ? [1.08, 0.88, 1.08] : [1, 1, 1],
     config: { tension: 320, friction: 14 },
   })
 
   const click = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    setPressed(true)
-    setTimeout(() => setPressed(false), 120)
-    setFocus({ id, position, distance })
+    if (squash) {
+      setPressed(true)
+      setTimeout(() => setPressed(false), 120)
+    }
+    if (useRoom.getState().focus?.id !== id) setFocus({ id, position, distance, dir })
     onActivate?.()
   }
 
