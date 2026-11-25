@@ -3,10 +3,12 @@ import { Room } from './scene/Room'
 import { CameraRig } from './scene/CameraRig'
 import { Lights } from './scene/Lights'
 import { useRoom } from './state/store'
+import { LetterOverlay } from './objects/letter/LetterOverlay'
 
 export function App() {
   const clearFocus = useRoom((s) => s.clearFocus)
   return (
+    <>
     <Canvas
       shadows
       dpr={[1, 2]}
@@ -18,5 +20,7 @@ export function App() {
       <Room />
       <CameraRig />
     </Canvas>
+    <LetterOverlay />
+    </>
   )
 }

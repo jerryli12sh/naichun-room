@@ -3,6 +3,8 @@ import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
 import { Avatar } from '../avatar/Avatar'
+import { Desk } from '../objects/desk/Desk'
+import { Letter } from '../objects/letter/Letter'
 
 /**
  * Grey-box PGPR Type C room (about 3 x 3.6 m, open on +x and +z like a diorama).
@@ -64,9 +66,9 @@ export function Room() {
       <Focusable id="croc" position={[-0.9, 0.55, -1.1]} distance={1}>
         <RoundedBox args={[0.3, 0.12, 0.14]} radius={0.05}><meshStandardMaterial color={palette.croc} /></RoundedBox>
       </Focusable>
-      <Focusable id="letter" position={[0.9, 0.79, -1.35]} distance={0.8}>
-        <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
-      </Focusable>
+      {/* desk props + letter + ending (branch 7) */}
+      <Desk />
+      <Letter />
       <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
         <Suspense fallback={null}>
           <Avatar />

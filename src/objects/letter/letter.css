@@ -1,0 +1,155 @@
+@import 'lxgw-wenkai-webfont/lxgwwenkai-regular.css';
+
+.nc-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: radial-gradient(ellipse at center, rgba(30, 43, 69, 0.35), rgba(16, 22, 38, 0.72));
+  animation: nc-fade 0.6s ease both;
+  z-index: 10;
+}
+
+.nc-paper {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 110px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 44px 44px 40px;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(transparent 0 33px, rgba(120, 140, 175, 0.18) 33px 34px),
+    #fbf6ea;
+  background-attachment: local;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35), 0 2px 0 rgba(255, 255, 255, 0.6) inset;
+  color: #3a3226;
+  font-family: 'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif;
+  font-size: 18px;
+  line-height: 34px;
+  background-position: 0 44px;
+  cursor: pointer;
+  animation: nc-rise 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+  scrollbar-width: thin;
+}
+
+.nc-line {
+  margin: 0;
+  text-indent: 2em;
+  opacity: 0;
+  animation: nc-ink 1.1s ease both;
+}
+.nc-to,
+.nc-sign,
+.nc-date {
+  text-indent: 0;
+}
+.nc-sign,
+.nc-date {
+  text-align: right;
+}
+.nc-date {
+  color: #8b7f6c;
+  font-size: 15px;
+}
+.nc-skip .nc-line {
+  animation-delay: 0s !important;
+  animation-duration: 0.3s;
+}
+
+.nc-hint {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: #f3e6cc;
+  opacity: 0;
+  transition: opacity 0.8s;
+  cursor: pointer;
+}
+.nc-hint.nc-show {
+  opacity: 1;
+  animation: nc-breathe 2.4s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- ending */
+.nc-ending {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px 11vh;
+  background: radial-gradient(ellipse 60% 55% at 50% 42%, transparent 40%, rgba(10, 14, 26, 0.85) 100%);
+  color: #fdf3df;
+  font-family: 'LXGW WenKai', 'Kaiti SC', 'STKaiti', serif;
+  text-align: center;
+  animation: nc-fade 2.4s ease both;
+  z-index: 10;
+  pointer-events: auto;
+}
+.nc-ending.nc-leave {
+  cursor: pointer;
+}
+.nc-title {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(40px, 8vw, 76px);
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 24px rgba(255, 200, 120, 0.45);
+}
+.nc-title span {
+  display: inline-block;
+  opacity: 0;
+  animation: nc-write 1.2s ease both;
+}
+.nc-sub {
+  margin: 18px 0 0;
+  font-size: 16px;
+  letter-spacing: 0.3em;
+  color: #e9d7b6;
+  opacity: 0;
+  animation: nc-fade 1.6s ease 3.8s both;
+}
+.nc-back {
+  margin: 28px 0 0;
+  font-size: 14px;
+  color: #b9b0a0;
+  opacity: 0;
+  animation: nc-fade 1.6s ease 5.2s both;
+}
+.nc-leave .nc-back {
+  animation: nc-fade 1.6s ease 5.2s both, nc-breathe 2.4s ease-in-out 6.8s infinite;
+}
+
+@keyframes nc-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nc-rise {
+  from { opacity: 0; transform: translateY(60px) rotate(-2deg) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nc-ink {
+  from { opacity: 0; filter: blur(3px); transform: translateY(6px); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes nc-write {
+  from { opacity: 0; filter: blur(8px); transform: translateY(10px) scale(1.15); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes nc-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (max-width: 480px) {
+  .nc-paper { padding: 32px 22px 32px; font-size: 16px; line-height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nc-line, .nc-title span, .nc-paper { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+}
