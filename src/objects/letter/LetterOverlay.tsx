@@ -31,9 +31,15 @@ export function LetterOverlay() {
     if (phase !== 'ending') return
     setCanLeave(false)
     setFocus({ id: 'ending', position: [0.2, 0.2, 0.2], distance: 12 })
+    // the ending always plays at night (夜猫子): lamps on, cold-blue sky; the visitor's hour comes back after
+    const hour = useRoom.getState().timeOfDay
+    set({ timeOfDay: 23 })
     const t = window.setTimeout(() => setCanLeave(true), 5200)
-    return () => window.clearTimeout(t)
-  }, [phase, setFocus])
+    return () => {
+      window.clearTimeout(t)
+      set({ timeOfDay: hour })
+    }
+  }, [phase, setFocus, set])
 
   // Esc while reading just closes the letter (no ending)
   useEffect(() => {
