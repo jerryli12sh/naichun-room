@@ -13,7 +13,6 @@ export function App() {
       camera={{ position: [7, 6, 7], fov: 35 }}
       onPointerMissed={(e) => e.detail === 2 && clearFocus()}
     >
-      <color attach="background" args={['#1e2b45']} />
       <Lights />
       <Room />
       <CameraRig />
