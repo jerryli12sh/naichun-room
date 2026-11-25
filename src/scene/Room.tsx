@@ -6,8 +6,8 @@ import { PHOTO_WALL, SURFACES, WINDOWS } from '../content/layout'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
-import { Avatar } from '../avatar/Avatar'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
+import { RoomAvatar } from '../avatar/RoomAvatar'
 import { Windows } from '../objects/Windows'
 import { CdPlayer } from '../objects/CdPlayer'
 import { AlarmClock } from '../objects/AlarmClock'
@@ -43,11 +43,10 @@ export function Room() {
       <Focusable id="letter" position={[SURFACES.desk.x - 0.1, SURFACES.desk.y + 0.005, SURFACES.desk.z + 0.12]} distance={0.8}>
         <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
       </Focusable>
-      <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
-        <Suspense fallback={null}>
-          <Avatar />
-        </Suspense>
-      </Focusable>
+      {/* the avatar moves around, so it handles its own click and camera focus */}
+      <Suspense fallback={null}>
+        <RoomAvatar />
+      </Suspense>
     </group>
   )
 }

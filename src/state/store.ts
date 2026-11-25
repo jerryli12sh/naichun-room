@@ -9,6 +9,8 @@ import { persist } from 'zustand/middleware'
  * add its name to PERSISTED. Do not write your own localStorage keys.
  */
 export type DoorMood = 'sleeping' | 'headphones' | 'croc' | 'eating'
+/** What the avatar is doing right now (set by branch 3, read-only for everyone else). */
+export type AvatarMode = 'idle' | 'walk' | 'watch' | 'desk' | 'doze' | 'sleep'
 export type FocusTarget = {
   id: string
   position: [number, number, number]
@@ -33,6 +35,7 @@ export type RoomState = {
   alarmRangAt: number // Date.now() of the last alarm ring, 0 = never (branch 3: avatar goes to bed / wakes up)
   lastMood: DoorMood | null // door mood of the previous visit, so the next one differs
   visits: number // how many times the site has been opened (door intro says 又来啦 after the first)
+  avatarMode: AvatarMode
   focus: FocusTarget | null
   setFocus: (f: FocusTarget) => void
   clearFocus: () => void
@@ -72,6 +75,7 @@ export const useRoom = create<RoomState>()(
       alarmRangAt: 0,
       lastMood: null,
       visits: 0,
+      avatarMode: 'idle',
       focus: null,
       setFocus: (focus) => set({ focus }),
       clearFocus: () => set({ focus: null }),
