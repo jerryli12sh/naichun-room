@@ -40,7 +40,7 @@ function useClockFace() {
 }
 
 /**
- * Red twin-bell alarm clock on the bedside cabinet (睡神的闹钟). Click rings it: it shakes,
+ * Pale-blue twin-bell alarm clock (tomato red is reserved for the tomato) on the bedside cabinet (睡神的闹钟). Click rings it: it shakes,
  * beeps, and stamps alarmRangAt in the store so the avatar (branch 3) can go to bed or wake up.
  * Rendered inside a Focusable; the ring is triggered through its onActivate.
  */
@@ -61,7 +61,7 @@ export function AlarmClock() {
     <group ref={body} rotation-y={-0.35}>
       <mesh rotation-x={Math.PI / 2} castShadow>
         <cylinderGeometry args={[0.075, 0.075, 0.05, 32]} />
-        <meshStandardMaterial color="#e0574a" roughness={0.4} />
+        <meshStandardMaterial color="#8fb3d1" roughness={0.4} />
       </mesh>
       <mesh position-z={0.026}>
         <circleGeometry args={[0.064, 32]} />
