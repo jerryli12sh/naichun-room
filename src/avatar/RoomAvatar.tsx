@@ -14,12 +14,12 @@ const look = (x: number, z: number, lx: number, lz: number): Spot => ({ x, z, ya
 
 /** Where he goes. yaw 0 = facing +z (towards the open side of the room). */
 const SPOTS = {
-  center: look(0.25, 0.3, 3, 3),
-  front: look(-0.2, 1.2, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
-  photos: look(-0.25, 0.55, -1.5, -0.68), // looking at the photo board above the bed
-  window: look(-0.1, -0.98, -0.25, -1.8), // over the cabinet, out of the narrow window
-  bedside: look(-0.15, -0.5, -1, -0.5),
-  desk: look(0.33, -0.8, 0.3, -1.8), // at the desk, over the books
+  center: look(0.15, 0.3, 3, 3), // on the rug
+  front: look(-0.45, 1.15, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
+  photos: look(-0.6, -0.2, -1.25, -1.8), // looking at the photo board above the bed head
+  window: look(0.05, -0.95, 0.7, -1.8), // at the left end of the desk, looking out of the window
+  bedside: look(-0.75, -0.45, -1.6, -0.45),
+  desk: look(0.45, -0.85, 0.45, -1.8), // at the desk, over the books
 }
 const WANDER: (keyof typeof SPOTS)[] = ['center', 'front', 'photos', 'center']
 

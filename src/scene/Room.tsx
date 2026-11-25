@@ -18,7 +18,7 @@ import { useRoom } from '../state/store'
 import { CrocCorner } from '../objects/croc'
 
 /**
- * PGPR Type C room (3 x 3.6 m, open on +x and +z like a diorama).
+ * PGPR Type C room (4.2 x 3.6 m, open on +x and +z like a diorama). Arrangement follows the earlier frank-room version.
  * Shell + Furniture + LightSwitch are the room look (branch 2); positions come from content/layout.ts.
  * Each Focusable placeholder below is replaced by its feature branch.
  */
@@ -31,7 +31,7 @@ export function Room() {
       <LightSwitch />
 
       {/* placeholders: one per feature branch */}
-      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={2.1} dir={[1, 0.1, 0.15]} hoverLift={0} squash={false}>
+      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={2.1} dir={[0.15, 0.1, 1]} hoverLift={0} squash={false}>
         <PhotoWall />
       </Focusable>
       <Windows />
