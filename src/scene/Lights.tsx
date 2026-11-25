@@ -82,7 +82,7 @@ export function Lights() {
         <meshBasicMaterial ref={glowMat} toneMapped={false} />
       </mesh>
       {/* desk lamp */}
-      <pointLight ref={desk} color="#ffd08a" position={[SURFACES.desk.x + 0.6, 1.05, -1.5]} distance={2.2} decay={1.5} />
+      <pointLight ref={desk} color="#ffd08a" position={[SURFACES.desk.x + 0.6, 1.05, SURFACES.desk.z - 0.05]} distance={2.2} decay={1.5} />
       {/* plain sky behind the openings */}
       {Object.values(WINDOWS).map((o) => (
         <mesh key={o.cx} position={[o.cx, o.y0 + o.h / 2, backZ]} material={skyMat}>
