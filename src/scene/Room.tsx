@@ -2,11 +2,12 @@ import { RoundedBox } from '@react-three/drei'
 import { Shell } from './room/Shell'
 import { Furniture } from './room/Furniture'
 import { LightSwitch } from './room/LightSwitch'
-import { SURFACES, WINDOWS } from '../content/layout'
+import { PHOTO_WALL, SURFACES, WINDOWS } from '../content/layout'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
 import { Avatar } from '../avatar/Avatar'
+import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
 import { Windows } from '../objects/Windows'
 import { CdPlayer } from '../objects/CdPlayer'
 import { AlarmClock } from '../objects/AlarmClock'
@@ -28,8 +29,8 @@ export function Room() {
       <LightSwitch />
 
       {/* placeholders: one per feature branch */}
-      <Focusable id="photo-wall" position={[-1.44, 1.55, 0.95]} distance={1.6}>
-        <mesh><boxGeometry args={[0.04, 0.8, 1]} /><meshStandardMaterial color="#cfc6b8" /></mesh>
+      <Focusable id={PHOTO_WALL_ID} position={[PHOTO_WALL.x, PHOTO_WALL.y, PHOTO_WALL.z]} distance={1.75} dir={[1, 0.12, 0.28]} hoverLift={0} squash={false}>
+        <PhotoWall />
       </Focusable>
       <Windows />
       <Focusable id="cd-player" position={[SURFACES.cabinet.x - 0.1, SURFACES.cabinet.y, SURFACES.cabinet.z - 0.06]} distance={1} onActivate={() => set({ musicOn: !useRoom.getState().musicOn })}>

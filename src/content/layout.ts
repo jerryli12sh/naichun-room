@@ -20,6 +20,9 @@ export const SURFACES = {
   bed: { x: -0.98, y: 0.52, z: -0.75 }, // mattress top
 } as const
 
+/** Photo wall: centre of the photo area on the left wall (-x), between the yellow bed panel (ends z 0.44) and the light switch (z 1.55). */
+export const PHOTO_WALL = { x: -ROOM.w / 2 + 0.04, y: 1.62, z: 1.0 } as const
+
 /** Day/night: 0 = full day, 1 = full night. Ramps 17–20h and 5–8h. */
 export function nightness(hour: number) {
   const h = ((hour % 24) + 24) % 24
