@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { Focusable } from '../../scene/Focusable'
 import { useRoom } from '../../state/store'
 import { SURFACES } from '../../content/layout'
+import { paperRustle, sealPop } from './sounds'
 
 const POS: [number, number, number] = [SURFACES.desk.x + 0.24, SURFACES.desk.y, SURFACES.desk.z + 0.17]
 const W = 0.2
@@ -56,7 +57,10 @@ export function Letter() {
 
   const activate = () => {
     if (phase === 'opening' || phase === 'reading' || phase === 'ending') return
+    const wasSealed = !useRoom.getState().letterOpened
     set({ letterPhase: 'opening', letterOpened: true }) // letterOpened is in PERSISTED
+    if (wasSealed) sealPop()
+    window.setTimeout(() => paperRustle(0.7), wasSealed ? 250 : 0)
     timer.current = window.setTimeout(() => useRoom.getState().set({ letterPhase: 'reading' }), 1400)
   }
 

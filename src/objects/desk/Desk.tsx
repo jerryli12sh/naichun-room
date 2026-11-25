@@ -221,7 +221,7 @@ function Mug({ position }: { position: [number, number, number] }) {
         <cylinderGeometry args={[0.035, 0.032, 0.09, 24]} />
         <meshStandardMaterial color={palette.cream} roughness={0.5} />
       </mesh>
-      <mesh position={[0.038, 0.048, 0]} rotation-z={Math.PI / 2}>
+      <mesh position={[0.034, 0.048, 0]} rotation-z={-Math.PI / 2}>
         <torusGeometry args={[0.018, 0.005, 8, 16, Math.PI]} />
         <meshStandardMaterial color={palette.cream} roughness={0.5} />
       </mesh>

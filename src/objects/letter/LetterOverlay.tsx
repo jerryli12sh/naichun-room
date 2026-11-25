@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRoom } from '../../state/store'
 import { ending, letter } from '../../content/letter'
+import { endingChime, paperRustle } from './sounds'
 import './letter.css'
 
 const STEP = 0.9 // seconds between paragraphs
@@ -30,7 +31,11 @@ export function LetterOverlay() {
   useEffect(() => {
     if (phase !== 'ending') return
     setCanLeave(false)
-    setFocus({ id: 'ending', position: [0.2, 0.2, 0.2], distance: 12 })
+    paperRustle(0.4, 0.06)
+    endingChime()
+    // pull back further on portrait screens so the whole diorama fits across
+    const aspect = window.innerWidth / window.innerHeight
+    setFocus({ id: 'ending', position: [0.2, 0.2, 0.2], distance: 12 * Math.max(1, 0.85 / aspect) })
     // the ending always plays at night (夜猫子): lamps on, cold-blue sky; the visitor's hour comes back after
     const hour = useRoom.getState().timeOfDay
     set({ timeOfDay: 23 })
