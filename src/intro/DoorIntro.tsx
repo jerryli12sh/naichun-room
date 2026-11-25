@@ -9,6 +9,7 @@ import * as sfx from './sfx'
 import { Avatar } from '../avatar/Avatar'
 import { pickMood, useRoom } from '../state/store'
 import { door, doorLines } from '../content/door'
+import { nightness } from '../content/layout'
 import './intro.css'
 
 /*
@@ -32,6 +33,12 @@ const FIG_POS = new THREE.Vector3(0.08, 0, -0.55)
 const FIG_SCALE = 1.12
 const AVATAR_H = 1.16
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const lerp = THREE.MathUtils.lerp
+// day / night ends for the corridor (night is the look Jerry signed off on)
+const BG_DAY = new THREE.Color('#e9e1d3'), BG_NIGHT = new THREE.Color('#0d1626')
+const HEMI_DAY = new THREE.Color('#fff4e0'), HEMI_NIGHT = new THREE.Color('#9fb0d8')
+const SKY_DAY = new THREE.Color('#fff1d6'), SKY_NIGHT = new THREE.Color('#9db6ff')
+const WIN_DAY = new THREE.Color('#d6e8ff'), WIN_NIGHT = new THREE.Color('#7ea0ff')
 
 export function DoorIntro() {
   const mood = useRoom((s) => s.doorMood)
@@ -50,6 +57,8 @@ export function DoorIntro() {
     doorAngle: 0,
     handle: 0,
     shake: 0,
+    lit: 0, // 0..1, his room light switching on before he opens the door
+    night: nightness(useRoom.getState().timeOfDay),
     camBase: CAM_HOME.clone(),
     camLive: false,
     tweens: [] as Tween[],
@@ -75,8 +84,8 @@ export function DoorIntro() {
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera
     const prevBg = scene.background, prevFog = scene.fog
-    scene.background = new THREE.Color('#0d1626')
-    scene.fog = new THREE.Fog('#0d1626', 7, 16)
+    scene.background = new THREE.Color()
+    scene.fog = new THREE.Fog(new THREE.Color(), 7, 16)
     cam.position.set(0, 1.5, 7.2)
     const fit = () => { cam.fov = cam.aspect < 1 ? 52 : 38; cam.updateProjectionMatrix() }
     fit()
@@ -120,7 +129,7 @@ export function DoorIntro() {
     } else {
       await wait(700)
       st.set({ hint: door.hints.coming })
-      tween(0.8, (k) => { c.roomLight.intensity = 2 + k * 5; c.gapMat.opacity = 0.55 + k * 0.4; c.spillMat.opacity = 0.25 + k * 0.35 })
+      tween(0.8, (k) => (a.lit = k))
       ;[0, 0.42, 0.82, 1.18].forEach((t, i) => sfx.step(0.35 + t, 0.18 + i * 0.04))
       await wait(1900)
       await openDoor()
@@ -183,7 +192,7 @@ export function DoorIntro() {
     await tween(0.9, (k) => (a.doorAngle = ang * (1 - k)))
     sfx.knock(0, 0.5)
     if (fig.current) fig.current.visible = false
-    c.roomLight.intensity = 2; c.gapMat.opacity = 0.55; c.spillMat.opacity = 0.25
+    a.lit = 0
     const doorMood = pickMood(useRoom.getState().doorMood)
     setRoom({ doorMood, lastMood: doorMood })
     st.set({ phase: 'idle', knocks: 0, hint: door.hints.start })
@@ -238,8 +247,21 @@ export function DoorIntro() {
     c.lever.rotation.z = a.handle
     c.hangCard.parent!.rotation.z = -a.handle // keep the hanger dangling straight
     c.hangCard.rotation.z = Math.sin(t * 2.2) * 0.04 + Math.sin(t * 40) * a.shake * 0.15
-    c.gapMat.opacity += Math.sin(t * 1.3) * 0.002
-    ;(c.lampGlow.material as THREE.MeshStandardMaterial).emissiveIntensity = 2.1 + Math.sin(t * 0.8) * 0.1
+    // day / night, eased so the light switch in the room store fades rather than cuts
+    a.night += (nightness(useRoom.getState().timeOfDay) - a.night) * Math.min(1, dt * 1.5)
+    const n = a.night
+    ;(scene.background as THREE.Color).copy(BG_DAY).lerp(BG_NIGHT, n)
+    ;(scene.fog as THREE.Fog).color.copy(scene.background as THREE.Color)
+    c.hemi.intensity = lerp(1.15, 0.75, n); c.hemi.color.copy(HEMI_DAY).lerp(HEMI_NIGHT, n)
+    c.moon.intensity = lerp(1.1, 0.35, n); c.moon.color.copy(SKY_DAY).lerp(SKY_NIGHT, n)
+    c.spot.intensity = lerp(9, 26, n)
+    c.fill.intensity = lerp(3, 5, n)
+    c.winLight.intensity = lerp(2.2, 1.6, n); c.winLight.color.copy(WIN_DAY).lerp(WIN_NIGHT, n)
+    c.winNightMat.opacity = n
+    c.roomLight.intensity = lerp(1.2, 2, n) + a.lit * 5
+    c.gapMat.opacity = lerp(0.22, 0.55, n) + a.lit * 0.4 + Math.sin(t * 1.3) * 0.02
+    c.spillMat.opacity = lerp(0.08, 0.25, n) + a.lit * 0.35
+    ;(c.lampGlow.material as THREE.MeshStandardMaterial).emissiveIntensity = lerp(0.8, 2.1, n) + Math.sin(t * 0.8) * 0.1
 
     // idle motion per mood (the model itself is static; branch 3 adds a rig)
     if (sway.current && fig.current?.visible) {

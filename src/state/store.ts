@@ -62,7 +62,7 @@ export const useRoom = create<RoomState>()(
       doorMood: pickMood(),
       isRaining: false,
       musicOn: false,
-      timeOfDay: new Date().getHours(),
+      timeOfDay: params.has('hour') ? Number(params.get('hour')) : new Date().getHours(), // ?hour=22 to preview
       stickersFound: [],
       stickerPop: null,
       tomatoYeets: 0,
