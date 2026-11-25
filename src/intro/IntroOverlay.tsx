@@ -36,6 +36,7 @@ export function IntroOverlay() {
         </div>
       </div>
       <button className={`nc-replay${open ? ' show' : ''}`} title={door.replay} aria-label={door.replay} onClick={() => ask('replay')}>↻</button>
+      <button className={`nc-skip${!entered && phase !== 'leaving' && phase !== 'done' ? ' show' : ''}`} title={door.skipHint} onClick={() => ask('skip')}>{door.skip}</button>
       <button className={`nc-enter${open ? ' show' : ''}`} onClick={() => ask('enter')}>{door.enter}</button>
     </div>
   )
