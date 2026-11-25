@@ -6,10 +6,10 @@ import { PHOTO_WALL, SURFACES, WINDOWS } from '../content/layout'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
-import { Avatar } from '../avatar/Avatar'
 import { Desk } from '../objects/desk/Desk'
 import { Letter } from '../objects/letter/Letter'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
+import { RoomAvatar } from '../avatar/RoomAvatar'
 import { Windows } from '../objects/Windows'
 import { CdPlayer } from '../objects/CdPlayer'
 import { AlarmClock } from '../objects/AlarmClock'
@@ -45,11 +45,10 @@ export function Room() {
       {/* desk-top props + letter + ending (branch 7) */}
       <Desk />
       <Letter />
-      <Focusable id="avatar" position={[0.3, 0, 0.3]} distance={1.4}>
-        <Suspense fallback={null}>
-          <Avatar />
-        </Suspense>
-      </Focusable>
+      {/* the avatar moves around, so it handles its own click and camera focus */}
+      <Suspense fallback={null}>
+        <RoomAvatar />
+      </Suspense>
     </group>
   )
 }
