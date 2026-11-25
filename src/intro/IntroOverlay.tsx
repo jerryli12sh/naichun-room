@@ -5,7 +5,7 @@ import { nightness } from '../content/layout'
 import { door } from '../content/door'
 import './intro.css'
 
-/** The few bits of HTML on top of the door scene: place name, hint + knock dots, replay, enter, and the fade curtain. */
+/** The few bits of HTML on top of the door scene: place name, hint + knock dots, replay and enter. */
 export function IntroOverlay() {
   const entered = useRoom((s) => s.entered)
   const { phase, knocks, hint, ask } = useIntro()
@@ -13,7 +13,7 @@ export function IntroOverlay() {
   const day = useRoom((s) => nightness(s.timeOfDay) < 0.5)
   const [gone, setGone] = useState(entered)
 
-  // after walking in, let the curtain fade out, then drop the overlay entirely
+  // after walking in, let the hint fade, then drop the overlay entirely
   useEffect(() => {
     if (!entered) return
     const t = setTimeout(() => setGone(true), 1600)
@@ -37,7 +37,6 @@ export function IntroOverlay() {
       </div>
       <button className={`nc-replay${open ? ' show' : ''}`} title={door.replay} aria-label={door.replay} onClick={() => ask('replay')}>↻</button>
       <button className={`nc-enter${open ? ' show' : ''}`} onClick={() => ask('enter')}>{door.enter}</button>
-      <div className={`nc-curtain${phase === 'leaving' && !entered ? ' on' : ''}`} />
     </div>
   )
 }

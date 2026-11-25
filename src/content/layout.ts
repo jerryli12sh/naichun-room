@@ -35,6 +35,16 @@ export const PHOTO_WALL = { wall: 'back' as 'left' | 'back', x: (PANEL.x0 + PANE
 /** Open floor in the middle of the room. */
 export const RUG = { x: 0.3, z: 0.3, w: 1.4, d: 1.0 } as const
 
+/**
+ * The room's door: front wall (z = +ROOM.d / 2), centred at cx, hinged on its +x side and opening
+ * inward to lie flat along the open +x edge. Keep floor x 0.4..1.5, z 0.8..1.8 clear for its swing.
+ * The door intro (src/intro) builds the corridor, front wall and door around it.
+ */
+export const DOOR = { cx: 0.9, w: 0.92, h: 2.05 } as const
+
+/** Where the avatar stands when you walk in (the door intro walks him here, then hands over). */
+export const AVATAR_SPOT = { x: 0.3, z: 0.3, yaw: Math.atan2(3 - 0.3, 3 - 0.3) } as const // RoomAvatar SPOTS.center reads this
+
 /** Day/night: 0 = full day, 1 = full night. Ramps 17–20h and 5–8h. */
 export function nightness(hour: number) {
   const h = ((hour % 24) + 24) % 24

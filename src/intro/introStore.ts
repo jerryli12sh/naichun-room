@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { door } from '../content/door'
+import { useRoom } from '../state/store'
 
 /**
  * Local state of the door intro, shared by the 3D scene and the HTML overlay.
  * Only this branch uses it; the rest of the site only sees `entered` in the room store.
  */
-export type IntroPhase = 'arriving' | 'idle' | 'busy' | 'opening' | 'open' | 'leaving'
+export type IntroPhase = 'arriving' | 'idle' | 'busy' | 'opening' | 'open' | 'leaving' | 'done'
 
 type IntroState = {
   phase: IntroPhase
@@ -19,7 +20,7 @@ type IntroState = {
 }
 
 export const useIntro = create<IntroState>((set, get) => ({
-  phase: 'arriving',
+  phase: useRoom.getState().entered ? 'done' : 'arriving', // `?room` skips the door
   knocks: 0,
   hint: door.hints.start, // IntroOverlay swaps in `returning` for repeat visits
   bubble: false,
