@@ -6,6 +6,8 @@ import { PHOTO_WALL, SURFACES, WINDOWS } from '../content/layout'
 import { Focusable } from './Focusable'
 import { palette } from '../content/palette'
 import { Suspense } from 'react'
+import { Desk } from '../objects/desk/Desk'
+import { Letter } from '../objects/letter/Letter'
 import { PhotoWall, PHOTO_WALL_ID } from '../objects/photo-wall/PhotoWall'
 import { RoomAvatar } from '../avatar/RoomAvatar'
 import { Windows } from '../objects/Windows'
@@ -40,9 +42,9 @@ export function Room() {
         <AlarmClock />
       </Focusable>
       <CrocCorner />
-      <Focusable id="letter" position={[SURFACES.desk.x - 0.1, SURFACES.desk.y + 0.005, SURFACES.desk.z + 0.12]} distance={0.8}>
-        <mesh rotation-x={-Math.PI / 2}><planeGeometry args={[0.22, 0.14]} /><meshStandardMaterial color="#fffaf0" /></mesh>
-      </Focusable>
+      {/* desk-top props + letter + ending (branch 7) */}
+      <Desk />
+      <Letter />
       {/* the avatar moves around, so it handles its own click and camera focus */}
       <Suspense fallback={null}>
         <RoomAvatar />

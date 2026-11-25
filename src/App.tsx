@@ -5,6 +5,7 @@ import { Lights } from './scene/Lights'
 import { DoorIntro } from './intro/DoorIntro'
 import { IntroOverlay } from './intro/IntroOverlay'
 import { useRoom } from './state/store'
+import { LetterOverlay } from './objects/letter/LetterOverlay'
 import { StickerOverlay } from './objects/croc'
 
 export function App() {
@@ -31,6 +32,7 @@ export function App() {
       </Canvas>
       <IntroOverlay />
       {entered && <StickerOverlay />}
+      <LetterOverlay />
     </>
   )
 }

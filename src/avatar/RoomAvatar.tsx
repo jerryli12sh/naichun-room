@@ -16,7 +16,7 @@ const look = (x: number, z: number, lx: number, lz: number): Spot => ({ x, z, ya
 const SPOTS = {
   center: look(0.25, 0.3, 3, 3),
   front: look(-0.2, 1.2, 3, 3), // keeps the doorway strip (x 0.4..1.5, z > 0.8) clear
-  photos: look(-0.6, 0.95, -1.5, 0.95), // looking at the photo wall
+  photos: look(-0.25, 0.55, -1.5, -0.68), // looking at the photo board above the bed
   window: look(-0.1, -0.98, -0.25, -1.8), // over the cabinet, out of the narrow window
   bedside: look(-0.15, -0.5, -1, -0.5),
   desk: look(0.33, -0.8, 0.3, -1.8), // at the desk, over the books

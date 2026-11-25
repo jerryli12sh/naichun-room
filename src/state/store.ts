@@ -11,6 +11,8 @@ import { persist } from 'zustand/middleware'
 export type DoorMood = 'sleeping' | 'headphones' | 'croc' | 'eating'
 /** What the avatar is doing right now (set by branch 3, read-only for everyone else). */
 export type AvatarMode = 'idle' | 'walk' | 'watch' | 'desk' | 'doze' | 'sleep'
+/** Letter flow (branch 7): sealed → opening (flap lifts) → reading (overlay) → ending (pull-back + 笑着过日子) → done */
+export type LetterPhase = 'sealed' | 'opening' | 'reading' | 'ending' | 'done'
 export type FocusTarget = {
   id: string
   position: [number, number, number]
@@ -31,6 +33,7 @@ export type RoomState = {
   tomatoYeets: number // times the wall tomato was flicked out of the room (branch 6)
   albumOpen: boolean // crocodile sticker album overlay (branch 6)
   letterOpened: boolean
+  letterPhase: LetterPhase // not persisted; other branches may react, e.g. the avatar waves during 'ending'
   dragging: boolean // something is being dragged; camera orbit pauses
   alarmRangAt: number // Date.now() of the last alarm ring, 0 = never (branch 3: avatar goes to bed / wakes up)
   lastMood: DoorMood | null // door mood of the previous visit, so the next one differs
@@ -71,6 +74,7 @@ export const useRoom = create<RoomState>()(
       tomatoYeets: 0,
       albumOpen: false,
       letterOpened: false,
+      letterPhase: 'sealed',
       dragging: false,
       alarmRangAt: 0,
       lastMood: null,
